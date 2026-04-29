@@ -1,0 +1,374 @@
+# UniFi Network Monitor connectivity helper package
+#
+# Purpose:
+#   Keep local DNS, AdGuard DNS and HTTP health checks outside the integration.
+#   This package intentionally does not poll the UniFi API directly.
+#
+# Requires:
+#   - UniFi Network Monitor custom integration
+#   - secret: internet_dns_internal_check_command
+#
+# Suggested location:
+#   /config/packages/internet_connectivity_helpers.yaml
+
+input_datetime:
+  internet_last_routing_change:
+    name: Internet Last Routing Change
+    has_date: true
+    has_time: true
+
+counter:
+  internet_failovers_today:
+    name: Internet Failovers Today
+    restore: true
+    initial: 0
+    step: 1
+
+timer:
+  internet_alert_cooldown:
+    name: Internet Alert Cooldown
+    duration: "00:20:00"
+
+input_boolean:
+  internet_alert_silenced:
+    name: Internet Alert Silenced
+    initial: false
+
+command_line:
+  - sensor:
+      name: Internet DNS External Check Raw
+      unique_id: internet_dns_external_check_raw
+      command: "nslookup homeassistant.io 1.1.1.1 >/dev/null 2>&1 && echo OK || echo FAIL"
+      scan_interval: 60
+
+  - sensor:
+      name: Internet DNS AdGuard Check Raw
+      unique_id: internet_dns_adguard_check_raw
+      command: !secret internet_dns_internal_check_command
+      scan_interval: 60
+
+  - sensor:
+      name: Internet HTTP Check Raw
+      unique_id: internet_http_check_raw
+      command: "wget -q --spider --timeout=5 https://www.google.com/generate_204 >/dev/null 2>&1 && echo OK || echo FAIL"
+      scan_interval: 60
+
+template:
+  - binary_sensor:
+      - name: Internet DNS External OK
+        unique_id: internet_dns_external_ok
+        icon: mdi:dns
+        state: "{{ is_state('sensor.internet_dns_external_check_raw', 'OK') }}"
+
+      - name: Internet DNS AdGuard OK
+        unique_id: internet_dns_adguard_ok
+        icon: mdi:shield-check
+        state: "{{ is_state('sensor.internet_dns_adguard_check_raw', 'OK') }}"
+
+      - name: Internet HTTP OK
+        unique_id: internet_http_ok
+        icon: mdi:web-check
+        state: "{{ is_state('sensor.internet_http_check_raw', 'OK') }}"
+
+      - name: Internet Fully Healthy
+        unique_id: internet_fully_healthy
+        icon: mdi:web-check
+        state: >
+          {{
+            is_state('binary_sensor.unifi_network_monitor_internet_online', 'on')
+            and is_state('binary_sensor.internet_dns_external_ok', 'on')
+            and is_state('binary_sensor.internet_dns_adguard_ok', 'on')
+            and is_state('binary_sensor.internet_http_ok', 'on')
+          }}
+        attributes:
+          internet_online: "{{ states('binary_sensor.unifi_network_monitor_internet_online') }}"
+          dns_external: "{{ states('binary_sensor.internet_dns_external_ok') }}"
+          dns_adguard: "{{ states('binary_sensor.internet_dns_adguard_ok') }}"
+          http: "{{ states('binary_sensor.internet_http_ok') }}"
+          routing_mode: "{{ states('sensor.unifi_network_monitor_internet_routing_mode') }}"
+
+  - sensor:
+      - name: Internet Health State
+        unique_id: internet_health_state
+        icon: mdi:heart-pulse
+        state: >
+          {% if is_state('binary_sensor.internet_fully_healthy', 'on') %}
+            Healthy
+          {% elif not is_state('binary_sensor.unifi_network_monitor_internet_online', 'on') %}
+            No Connectivity
+          {% elif is_state('binary_sensor.internet_dns_external_ok','off') and is_state('binary_sensor.internet_dns_adguard_ok','on') %}
+            External DNS Failure
+          {% elif is_state('binary_sensor.internet_dns_external_ok','on') and is_state('binary_sensor.internet_dns_adguard_ok','off') %}
+            AdGuard DNS Failure
+          {% elif is_state('binary_sensor.internet_dns_external_ok','off') and is_state('binary_sensor.internet_dns_adguard_ok','off') %}
+            DNS Failure
+          {% elif not is_state('binary_sensor.internet_http_ok', 'on') %}
+            HTTP Failure
+          {% else %}
+            Degraded
+          {% endif %}
+        attributes:
+          integration_health_state: "{{ states('sensor.unifi_network_monitor_internet_health_state') }}"
+          routing_mode: "{{ states('sensor.unifi_network_monitor_internet_routing_mode') }}"
+          dns_external: "{{ states('binary_sensor.internet_dns_external_ok') }}"
+          dns_adguard: "{{ states('binary_sensor.internet_dns_adguard_ok') }}"
+          http: "{{ states('binary_sensor.internet_http_ok') }}"
+
+      - name: Internet Stability Score
+        unique_id: internet_stability_score
+        unit_of_measurement: "%"
+        icon: mdi:shield-check
+        state: >
+          {% set base = states('sensor.unifi_network_monitor_internet_stability_score') | float(0) %}
+          {% set failovers = states('counter.internet_failovers_today') | int(0) %}
+          {% set outages = states('sensor.unifi_network_monitor_wan_total_outages_today') | int(0) %}
+          {% set dns_penalty = 0 %}
+          {% if is_state('binary_sensor.internet_dns_external_ok', 'off') %}
+            {% set dns_penalty = dns_penalty + 8 %}
+          {% endif %}
+          {% if is_state('binary_sensor.internet_dns_adguard_ok', 'off') %}
+            {% set dns_penalty = dns_penalty + 8 %}
+          {% endif %}
+          {% set http_penalty = 10 if is_state('binary_sensor.internet_http_ok', 'off') else 0 %}
+          {% set score = base - (failovers * 3) - (outages * 8) - dns_penalty - http_penalty %}
+          {{ [[score, 0] | max, 100] | min | round(0) }}
+        attributes:
+          base_score: "{{ states('sensor.unifi_network_monitor_internet_stability_score') | float(0) | round(1) }}"
+          integration_state: "{{ states('sensor.unifi_network_monitor_internet_stability_state') }}"
+          routing_mode: "{{ states('sensor.unifi_network_monitor_internet_routing_mode') }}"
+          wan1_score: "{{ states('sensor.unifi_network_monitor_wan1_stability_score') | float(0) | round(1) }}"
+          wan2_score: "{{ states('sensor.unifi_network_monitor_wan2_stability_score') | float(0) | round(1) }}"
+          failovers_today: "{{ states('counter.internet_failovers_today') | int(0) }}"
+          total_outages_today: "{{ states('sensor.unifi_network_monitor_wan_total_outages_today') | int(0) }}"
+          dns_external_ok: "{{ is_state('binary_sensor.internet_dns_external_ok', 'on') }}"
+          dns_adguard_ok: "{{ is_state('binary_sensor.internet_dns_adguard_ok', 'on') }}"
+          http_ok: "{{ is_state('binary_sensor.internet_http_ok', 'on') }}"
+
+      - name: Internet Stability State
+        unique_id: internet_stability_state
+        icon: mdi:pulse
+        state: >
+          {% set s = states('sensor.internet_stability_score') | int(0) %}
+          {% if s >= 97 %}
+            Excellent
+          {% elif s >= 90 %}
+            Good
+          {% elif s >= 75 %}
+            Degraded
+          {% elif s >= 50 %}
+            At Risk
+          {% else %}
+            Critical
+          {% endif %}
+
+      - name: Internet Uptime Today Percent
+        unique_id: internet_uptime_today_percent
+        unit_of_measurement: "%"
+        icon: mdi:percent-outline
+        state: "{{ states('sensor.unifi_network_monitor_internet_uptime_today_percent') | float(0) | round(2) }}"
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.unifi_network_monitor_internet_routing_mode
+          - binary_sensor.unifi_network_monitor_wan_api_fresh
+    sensor:
+      - name: Internet Routing Mode Stable
+        unique_id: internet_routing_mode_stable
+        icon: mdi:wan
+        state: >
+          {% set raw = states('sensor.unifi_network_monitor_internet_routing_mode') %}
+          {% set valid = ['WAN1', 'WAN2', 'BALANCED', 'OFFLINE'] %}
+          {% if is_state('binary_sensor.unifi_network_monitor_wan_api_fresh', 'on') and raw in valid %}
+            {{ raw }}
+          {% else %}
+            {{ this.state if this is defined and this.state not in ['unknown','unavailable','none',''] else 'UNKNOWN' }}
+          {% endif %}
+        attributes:
+          wan1_name: "{{ state_attr('sensor.unifi_network_monitor_internet_routing_mode', 'wan1_name') or 'WAN1' }}"
+          wan2_name: "{{ state_attr('sensor.unifi_network_monitor_internet_routing_mode', 'wan2_name') or 'WAN2' }}"
+          wan1_online: "{{ state_attr('sensor.unifi_network_monitor_internet_routing_mode', 'wan1_online') }}"
+          wan2_online: "{{ state_attr('sensor.unifi_network_monitor_internet_routing_mode', 'wan2_online') }}"
+          wan1_availability: "{{ state_attr('sensor.unifi_network_monitor_internet_routing_mode', 'wan1_availability') }}"
+          wan2_availability: "{{ state_attr('sensor.unifi_network_monitor_internet_routing_mode', 'wan2_availability') }}"
+          wan1_latency: "{{ state_attr('sensor.unifi_network_monitor_internet_routing_mode', 'wan1_latency') }}"
+          wan2_latency: "{{ state_attr('sensor.unifi_network_monitor_internet_routing_mode', 'wan2_latency') }}"
+          wan1_mbps: "{{ states('sensor.unifi_network_monitor_wan1_total_mbps') }}"
+          wan2_mbps: "{{ states('sensor.unifi_network_monitor_wan2_total_mbps') }}"
+          api_fresh: "{{ is_state('binary_sensor.unifi_network_monitor_wan_api_fresh', 'on') }}"
+
+automation:
+  - id: internet_routing_mode_track_change
+    alias: Internet Routing Mode Track Change
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: sensor.internet_routing_mode_stable
+    condition:
+      - condition: template
+        value_template: "{{ trigger.from_state is not none and trigger.to_state is not none }}"
+      - condition: template
+        value_template: "{{ trigger.to_state.state not in ['unknown','unavailable','none',''] }}"
+      - condition: template
+        value_template: "{{ trigger.from_state.state not in ['unknown','unavailable','none',''] }}"
+      - condition: template
+        value_template: "{{ trigger.from_state.state != trigger.to_state.state }}"
+    action:
+      - service: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.internet_last_routing_change
+        data:
+          datetime: "{{ now().isoformat() }}"
+
+  - id: internet_reset_failover_counter_daily
+    alias: Internet Reset Failover Counter Daily
+    mode: single
+    trigger:
+      - platform: time
+        at: "00:05:00"
+    action:
+      - service: counter.reset
+        target:
+          entity_id:
+            - counter.internet_failovers_today
+
+  - id: internet_alert_cooldown_start
+    alias: Internet Alert Cooldown Start
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id: input_boolean.internet_alert_silenced
+        to: "on"
+    action:
+      - service: timer.start
+        target:
+          entity_id: timer.internet_alert_cooldown
+
+  - id: internet_alert_cooldown_end
+    alias: Internet Alert Cooldown End
+    mode: single
+    trigger:
+      - platform: event
+        event_type: timer.finished
+        event_data:
+          entity_id: timer.internet_alert_cooldown
+    action:
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.internet_alert_silenced
+
+  - id: internet_notify_degraded
+    alias: Internet Notify Degraded
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.internet_fully_healthy
+        to: "off"
+        for: "00:05:00"
+    condition:
+      - condition: state
+        entity_id: input_boolean.internet_alert_silenced
+        state: "off"
+      - condition: template
+        value_template: >
+          {% set last = states('input_datetime.internet_last_routing_change') %}
+          {% if last in ['unknown','unavailable','none',''] %}
+            true
+          {% else %}
+            {{ (as_timestamp(now()) - as_timestamp(last)) > 120 }}
+          {% endif %}
+      - condition: template
+        value_template: >
+          {{ states('sensor.internet_health_state') not in ['Healthy', 'unknown', 'unavailable', 'none', ''] }}
+    action:
+      - service: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.internet_alert_silenced
+      - event: unifi_network_monitor_notification
+        event_data:
+          title: Internet Health Degraded
+          severity: warning
+          source: internet_notify_degraded
+          message: >
+            Internet Health degradiert
+            Status: {{ states('sensor.internet_health_state') }}
+            Routing: {{ states('sensor.internet_routing_mode_stable') }}
+            DNS AdGuard: {{ 'OK' if is_state('binary_sensor.internet_dns_adguard_ok','on') else 'FAIL' }}
+            DNS External: {{ 'OK' if is_state('binary_sensor.internet_dns_external_ok','on') else 'FAIL' }}
+            HTTP: {{ 'OK' if is_state('binary_sensor.internet_http_ok','on') else 'FAIL' }}
+            Failovers today: {{ states('counter.internet_failovers_today') }}
+
+  - id: internet_notify_recovered
+    alias: Internet Notify Recovered
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.internet_fully_healthy
+        to: "on"
+        for: "00:02:00"
+    condition:
+      - condition: template
+        value_template: >
+          {{
+            states('counter.internet_failovers_today') | int(0) > 0
+            or states('sensor.unifi_network_monitor_wan1_outages_today') | int(0) > 0
+            or states('sensor.unifi_network_monitor_wan2_outages_today') | int(0) > 0
+            or states('sensor.unifi_network_monitor_wan_total_outages_today') | int(0) > 0
+          }}
+      - condition: template
+        value_template: >
+          {% set raw = state_attr('sensor.unifi_network_monitor_wan_last_event', 'time') %}
+          {% set ts = as_timestamp(raw, default=none) if raw not in [none, '', 'unknown', 'unavailable'] else none %}
+          {{ ts is not none and (as_timestamp(now()) - ts) < 21600 }}
+    action:
+      - event: unifi_network_monitor_notification
+        event_data:
+          title: Internet Recovered
+          severity: info
+          source: internet_notify_recovered
+          message: >
+            Internet wieder stabil
+            Routing: {{ states('sensor.internet_routing_mode_stable') }}
+            Failovers today: {{ states('counter.internet_failovers_today') }}
+
+  - id: internet_routing_mode_change_stable
+    alias: Internet Routing Mode Changed (Stable)
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: sensor.internet_routing_mode_stable
+        for:
+          seconds: 30
+    condition:
+      - condition: state
+        entity_id: binary_sensor.unifi_network_monitor_wan_api_fresh
+        state: "on"
+      - condition: template
+        value_template: "{{ trigger.from_state is not none and trigger.to_state is not none }}"
+      - condition: template
+        value_template: "{{ trigger.from_state.state != trigger.to_state.state }}"
+      - condition: template
+        value_template: >
+          {% set valid = ['WAN1', 'WAN2', 'BALANCED', 'OFFLINE'] %}
+          {{ trigger.from_state.state in valid and trigger.to_state.state in valid }}
+    action:
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: >
+                  {{
+                    trigger.from_state.state in ['BALANCED', 'WAN1', 'WAN2']
+                    and trigger.to_state.state in ['WAN1', 'WAN2']
+                    and trigger.from_state.state != trigger.to_state.state
+                  }}
+            sequence:
+              - service: counter.increment
+                target:
+                  entity_id: counter.internet_failovers_today
+      - event: unifi_network_monitor_notification
+        event_data:
+          title: WAN Routing Changed
+          severity: warning
+          source: internet_routing_mode_change_stable
+          message: >
+            WAN Routing wurde von {{ trigger.from_state.state }} auf {{ trigger.to_state.state }} umgestellt

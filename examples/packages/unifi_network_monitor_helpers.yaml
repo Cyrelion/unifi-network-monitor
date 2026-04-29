@@ -1,0 +1,233 @@
+# UniFi Network Monitor helper package
+# Place this file in /config/packages/unifi_network_monitor_helpers.yaml
+# Requires packages to be enabled in configuration.yaml
+
+utility_meter:
+  unifi_network_monitor_wan1_rx_daily_gb:
+    source: sensor.unifi_network_monitor_wan1_rx_total
+    name: UniFi Network Monitor WAN1 RX Daily GB
+    unique_id: unifi_network_monitor_wan1_rx_daily_gb
+    cycle: daily
+    always_available: true
+
+  unifi_network_monitor_wan1_rx_weekly_gb:
+    source: sensor.unifi_network_monitor_wan1_rx_total
+    name: UniFi Network Monitor WAN1 RX Weekly GB
+    unique_id: unifi_network_monitor_wan1_rx_weekly_gb
+    cycle: weekly
+    always_available: true
+
+  unifi_network_monitor_wan1_rx_monthly_gb:
+    source: sensor.unifi_network_monitor_wan1_rx_total
+    name: UniFi Network Monitor WAN1 RX Monthly GB
+    unique_id: unifi_network_monitor_wan1_rx_monthly_gb
+    cycle: monthly
+    always_available: true
+
+  unifi_network_monitor_wan1_rx_yearly_gb:
+    source: sensor.unifi_network_monitor_wan1_rx_total
+    name: UniFi Network Monitor WAN1 RX Yearly GB
+    unique_id: unifi_network_monitor_wan1_rx_yearly_gb
+    cycle: yearly
+    always_available: true
+
+  unifi_network_monitor_wan1_tx_daily_gb:
+    source: sensor.unifi_network_monitor_wan1_tx_total
+    name: UniFi Network Monitor WAN1 TX Daily GB
+    unique_id: unifi_network_monitor_wan1_tx_daily_gb
+    cycle: daily
+    always_available: true
+
+  unifi_network_monitor_wan1_tx_weekly_gb:
+    source: sensor.unifi_network_monitor_wan1_tx_total
+    name: UniFi Network Monitor WAN1 TX Weekly GB
+    unique_id: unifi_network_monitor_wan1_tx_weekly_gb
+    cycle: weekly
+    always_available: true
+
+  unifi_network_monitor_wan1_tx_monthly_gb:
+    source: sensor.unifi_network_monitor_wan1_tx_total
+    name: UniFi Network Monitor WAN1 TX Monthly GB
+    unique_id: unifi_network_monitor_wan1_tx_monthly_gb
+    cycle: monthly
+    always_available: true
+
+  unifi_network_monitor_wan1_tx_yearly_gb:
+    source: sensor.unifi_network_monitor_wan1_tx_total
+    name: UniFi Network Monitor WAN1 TX Yearly GB
+    unique_id: unifi_network_monitor_wan1_tx_yearly_gb
+    cycle: yearly
+    always_available: true
+
+  unifi_network_monitor_wan2_rx_daily_gb:
+    source: sensor.unifi_network_monitor_wan2_rx_total
+    name: UniFi Network Monitor WAN2 RX Daily GB
+    unique_id: unifi_network_monitor_wan2_rx_daily_gb
+    cycle: daily
+    always_available: true
+
+  unifi_network_monitor_wan2_rx_weekly_gb:
+    source: sensor.unifi_network_monitor_wan2_rx_total
+    name: UniFi Network Monitor WAN2 RX Weekly GB
+    unique_id: unifi_network_monitor_wan2_rx_weekly_gb
+    cycle: weekly
+    always_available: true
+
+  unifi_network_monitor_wan2_rx_monthly_gb:
+    source: sensor.unifi_network_monitor_wan2_rx_total
+    name: UniFi Network Monitor WAN2 RX Monthly GB
+    unique_id: unifi_network_monitor_wan2_rx_monthly_gb
+    cycle: monthly
+    always_available: true
+
+  unifi_network_monitor_wan2_rx_yearly_gb:
+    source: sensor.unifi_network_monitor_wan2_rx_total
+    name: UniFi Network Monitor WAN2 RX Yearly GB
+    unique_id: unifi_network_monitor_wan2_rx_yearly_gb
+    cycle: yearly
+    always_available: true
+
+  unifi_network_monitor_wan2_tx_daily_gb:
+    source: sensor.unifi_network_monitor_wan2_tx_total
+    name: UniFi Network Monitor WAN2 TX Daily GB
+    unique_id: unifi_network_monitor_wan2_tx_daily_gb
+    cycle: daily
+    always_available: true
+
+  unifi_network_monitor_wan2_tx_weekly_gb:
+    source: sensor.unifi_network_monitor_wan2_tx_total
+    name: UniFi Network Monitor WAN2 TX Weekly GB
+    unique_id: unifi_network_monitor_wan2_tx_weekly_gb
+    cycle: weekly
+    always_available: true
+
+  unifi_network_monitor_wan2_tx_monthly_gb:
+    source: sensor.unifi_network_monitor_wan2_tx_total
+    name: UniFi Network Monitor WAN2 TX Monthly GB
+    unique_id: unifi_network_monitor_wan2_tx_monthly_gb
+    cycle: monthly
+    always_available: true
+
+  unifi_network_monitor_wan2_tx_yearly_gb:
+    source: sensor.unifi_network_monitor_wan2_tx_total
+    name: UniFi Network Monitor WAN2 TX Yearly GB
+    unique_id: unifi_network_monitor_wan2_tx_yearly_gb
+    cycle: yearly
+    always_available: true
+
+  unifi_network_monitor_internet_rx_daily_gb:
+    source: sensor.unifi_network_monitor_internet_rx_total
+    name: UniFi Network Monitor Internet RX Daily GB
+    unique_id: unifi_network_monitor_internet_rx_daily_gb
+    cycle: daily
+    always_available: true
+
+  unifi_network_monitor_internet_rx_weekly_gb:
+    source: sensor.unifi_network_monitor_internet_rx_total
+    name: UniFi Network Monitor Internet RX Weekly GB
+    unique_id: unifi_network_monitor_internet_rx_weekly_gb
+    cycle: weekly
+    always_available: true
+
+  unifi_network_monitor_internet_rx_monthly_gb:
+    source: sensor.unifi_network_monitor_internet_rx_total
+    name: UniFi Network Monitor Internet RX Monthly GB
+    unique_id: unifi_network_monitor_internet_rx_monthly_gb
+    cycle: monthly
+    always_available: true
+
+  unifi_network_monitor_internet_rx_yearly_gb:
+    source: sensor.unifi_network_monitor_internet_rx_total
+    name: UniFi Network Monitor Internet RX Yearly GB
+    unique_id: unifi_network_monitor_internet_rx_yearly_gb
+    cycle: yearly
+    always_available: true
+
+  unifi_network_monitor_internet_tx_daily_gb:
+    source: sensor.unifi_network_monitor_internet_tx_total
+    name: UniFi Network Monitor Internet TX Daily GB
+    unique_id: unifi_network_monitor_internet_tx_daily_gb
+    cycle: daily
+    always_available: true
+
+  unifi_network_monitor_internet_tx_weekly_gb:
+    source: sensor.unifi_network_monitor_internet_tx_total
+    name: UniFi Network Monitor Internet TX Weekly GB
+    unique_id: unifi_network_monitor_internet_tx_weekly_gb
+    cycle: weekly
+    always_available: true
+
+  unifi_network_monitor_internet_tx_monthly_gb:
+    source: sensor.unifi_network_monitor_internet_tx_total
+    name: UniFi Network Monitor Internet TX Monthly GB
+    unique_id: unifi_network_monitor_internet_tx_monthly_gb
+    cycle: monthly
+    always_available: true
+
+  unifi_network_monitor_internet_tx_yearly_gb:
+    source: sensor.unifi_network_monitor_internet_tx_total
+    name: UniFi Network Monitor Internet TX Yearly GB
+    unique_id: unifi_network_monitor_internet_tx_yearly_gb
+    cycle: yearly
+    always_available: true
+
+  unifi_network_monitor_internet_total_daily_gb:
+    source: sensor.unifi_network_monitor_internet_total
+    name: UniFi Network Monitor Internet Total Daily GB
+    unique_id: unifi_network_monitor_internet_total_daily_gb
+    cycle: daily
+    always_available: true
+
+  unifi_network_monitor_internet_total_weekly_gb:
+    source: sensor.unifi_network_monitor_internet_total
+    name: UniFi Network Monitor Internet Total Weekly GB
+    unique_id: unifi_network_monitor_internet_total_weekly_gb
+    cycle: weekly
+    always_available: true
+
+  unifi_network_monitor_internet_total_monthly_gb:
+    source: sensor.unifi_network_monitor_internet_total
+    name: UniFi Network Monitor Internet Total Monthly GB
+    unique_id: unifi_network_monitor_internet_total_monthly_gb
+    cycle: monthly
+    always_available: true
+
+  unifi_network_monitor_internet_total_yearly_gb:
+    source: sensor.unifi_network_monitor_internet_total
+    name: UniFi Network Monitor Internet Total Yearly GB
+    unique_id: unifi_network_monitor_internet_total_yearly_gb
+    cycle: yearly
+    always_available: true
+
+template:
+  - sensor:
+      - name: UniFi Network Monitor WAN Last Event Ago Pretty
+        unique_id: unifi_network_monitor_wan_last_event_ago_pretty
+        icon: mdi:clock-outline
+        state: >
+          {% set raw = state_attr('sensor.unifi_network_monitor_wan_last_event', 'time') %}
+          {% set ts = as_timestamp(raw, default=none) if raw not in [none, '', 'unknown', 'unavailable'] else none %}
+          {% if ts is none %}
+            never
+          {% else %}
+            {% set seconds = (as_timestamp(now()) - ts) | int(0) %}
+            {% if seconds < 60 %}
+              gerade eben
+            {% elif seconds < 3600 %}
+              vor {{ (seconds / 60) | round(0, 'floor') | int }} Minuten
+            {% elif seconds < 86400 %}
+              vor {{ (seconds / 3600) | round(0, 'floor') | int }} Stunden
+            {% else %}
+              vor {{ (seconds / 86400) | round(0, 'floor') | int }} Tagen
+            {% endif %}
+          {% endif %}
+
+sensor:
+  - platform: history_stats
+    name: UniFi Network Monitor Internet Uptime Today Percent
+    unique_id: unifi_network_monitor_internet_uptime_today_percent
+    entity_id: binary_sensor.unifi_network_monitor_internet_online
+    state: "on"
+    type: ratio
+    start: "{{ today_at() }}"
+    end: "{{ now() }}"

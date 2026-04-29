@@ -1,0 +1,14 @@
+{
+  "domain": "unifi_network_monitor",
+  "name": "UniFi Network Monitor",
+  "codeowners": [
+    "@Cyrelion"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/Cyrelion/unifi-network-monitor",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/Cyrelion/unifi-network-monitor/issues",
+  "requirements": [],
+  "version": "1.0.2"
+}

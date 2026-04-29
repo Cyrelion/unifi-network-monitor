@@ -1,0 +1,95 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "UniFi Network Monitor",
+        "description": "Verbindet sich mit deiner UniFi OS Console. Die Integration nutzt lokales Polling und erstellt eigene Entitäten, damit dein vorhandenes YAML Package parallel weiterlaufen kann. Optionale SNMP Einstellungen werden für Live WAN Traffic Counter genutzt. Der WAN Webhook kann UniFi Alarm Manager Events empfangen.",
+        "data": {
+          "host": "Host",
+          "username": "Benutzername",
+          "password": "Passwort",
+          "site": "Site",
+          "site_name": "Site Name",
+          "teleport_prefix": "Teleport IP Bereich oder Prefix",
+          "api_key": "Integration API Key",
+          "verify_ssl": "SSL Zertifikat prüfen",
+          "scan_interval": "Abfrageintervall in Sekunden",
+          "snmp_enabled": "SNMP Traffic Polling aktivieren",
+          "snmp_host": "SNMP Host",
+          "snmp_community": "SNMP Community",
+          "snmp_port": "SNMP Port",
+          "snmp_timeout": "SNMP Timeout in Sekunden",
+          "wan1_rx_oid": "WAN1 RX OID",
+          "wan1_tx_oid": "WAN1 TX OID",
+          "wan2_rx_oid": "WAN2 RX OID",
+          "wan2_tx_oid": "WAN2 TX OID",
+          "webhook_enabled": "WAN Alarm Manager Webhook aktivieren",
+          "webhook_local_only": "Nur lokale Webhook Requests akzeptieren",
+          "teleport_client_matchers": "Teleport Client Matcher"
+        }
+      },
+      "reconfigure": {
+        "title": "UniFi Network Monitor neu konfigurieren",
+        "description": "Ändert die Verbindungsdaten dieser UniFi Site. Für Teleport Bereich, API Key, Abfrageintervall, SNMP und Webhook Einstellungen kannst du auch die Optionen der Integration nutzen.",
+        "data": {
+          "host": "Host",
+          "username": "Benutzername",
+          "password": "Passwort",
+          "site": "Site",
+          "site_name": "Site Name",
+          "teleport_prefix": "Teleport IP Bereich oder Prefix",
+          "api_key": "Integration API Key",
+          "verify_ssl": "SSL Zertifikat prüfen",
+          "scan_interval": "Abfrageintervall in Sekunden",
+          "snmp_enabled": "SNMP Traffic Polling aktivieren",
+          "snmp_host": "SNMP Host",
+          "snmp_community": "SNMP Community",
+          "snmp_port": "SNMP Port",
+          "snmp_timeout": "SNMP Timeout in Sekunden",
+          "wan1_rx_oid": "WAN1 RX OID",
+          "wan1_tx_oid": "WAN1 TX OID",
+          "wan2_rx_oid": "WAN2 RX OID",
+          "wan2_tx_oid": "WAN2 TX OID",
+          "webhook_enabled": "WAN Alarm Manager Webhook aktivieren",
+          "webhook_local_only": "Nur lokale Webhook Requests akzeptieren",
+          "teleport_client_matchers": "Teleport Client Matcher"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung fehlgeschlagen",
+      "invalid_auth": "Anmeldedaten ungültig",
+      "unknown": "Unerwarteter Fehler"
+    },
+    "abort": {
+      "already_configured": "Diese UniFi Site ist bereits eingerichtet",
+      "wrong_site": "Die geänderten Daten gehören nicht zur eingerichteten UniFi Site"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "UniFi Network Monitor Optionen",
+        "description": "Optionale Einstellungen. Der Teleport Bereich akzeptiert entweder CIDR, zum Beispiel 192.168.2.0/24, oder einen einfachen Prefix, zum Beispiel 192.168.2. Optionale SNMP Einstellungen werden für Live WAN Traffic Counter genutzt. Die WAN Webhook ID wird unter /api/webhook/<id> verwendet. Wenn UniFi Teleport Clients nur als normale Clients ausgibt, kannst du hier Namen, Hostnames, MACs oder IP Fragmente kommasepariert eintragen.",
+        "data": {
+          "teleport_prefix": "Teleport IP Bereich oder Prefix",
+          "api_key": "Integration API Key",
+          "scan_interval": "Abfrageintervall in Sekunden",
+          "snmp_enabled": "SNMP Traffic Polling aktivieren",
+          "snmp_host": "SNMP Host",
+          "snmp_community": "SNMP Community",
+          "snmp_port": "SNMP Port",
+          "snmp_timeout": "SNMP Timeout in Sekunden",
+          "wan1_rx_oid": "WAN1 RX OID",
+          "wan1_tx_oid": "WAN1 TX OID",
+          "wan2_rx_oid": "WAN2 RX OID",
+          "wan2_tx_oid": "WAN2 TX OID",
+          "webhook_enabled": "WAN Alarm Manager Webhook aktivieren",
+          "webhook_local_only": "Nur lokale Webhook Requests akzeptieren",
+          "webhook_id": "WAN Webhook ID",
+          "teleport_client_matchers": "Teleport Client Matcher"
+        }
+      }
+    }
+  }
+}

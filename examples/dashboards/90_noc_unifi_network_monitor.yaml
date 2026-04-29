@@ -1,0 +1,1305 @@
+type: sections
+path: noc
+title: Network Operations Center
+icon: mdi:network
+max_columns: 3
+subview: true
+sections:
+  - type: grid
+    cards:
+      - title: Network Operations Center
+        icon: mdi:network-outline
+        tap_action:
+          action: navigate
+          navigation_path: /jarvis-home
+        right_items:
+          - type: state
+            entity: sensor.server_rack_temperature
+            icon: mdi:thermometer
+            decimals: 1
+            tap_action:
+              action: more-info
+          - type: state
+            entity: binary_sensor.unifi_network_monitor_internet_online
+            icon: mdi:web
+            decimals: 1
+            tap_action:
+              action: more-info
+          - type: state
+            entity: sensor.unifi_network_monitor_internet_routing_mode
+            tap_action:
+              action: more-info
+          - type: action
+            icon: mdi:close
+            tap_action:
+              action: navigate
+              navigation_path: /jarvis-home
+        type: custom:jarvis-room-header-card
+        grid_options:
+          columns: full
+    column_span: 3
+
+  - type: grid
+    column_span: 3
+    cards:
+      - type: markdown
+        content: >
+          ## 🌐 Network Status Dashboard
+
+          **Real-time monitoring and control center for dual-WAN infrastructure**
+
+          Current Status: **{{ states('sensor.unifi_network_monitor_internet_health_state') }}** • Routing: **{{ states('sensor.unifi_network_monitor_internet_routing_mode') }}** • Uptime: **{{ states('sensor.unifi_network_monitor_internet_uptime_today_percent') }}%**
+        grid_options:
+          columns: full
+        uix:
+          style: |
+            ha-card {
+              background: linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(76, 175, 80, 0.1) 100%);
+              border-left: 4px solid var(--primary-color);
+            }
+
+  - type: grid
+    column_span: 3
+    cards:
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Network Health Score
+            secondary: >-
+              {{ states('sensor.unifi_network_monitor_internet_stability_score') }}% •
+              {{ states('sensor.unifi_network_monitor_internet_stability_state') }}
+            icon: mdi:shield-check
+            tap_action:
+              action: more-info
+              entity: sensor.unifi_network_monitor_internet_stability_score
+            grid_options:
+              columns: full
+            color: >
+              {% set total = states('sensor.unifi_network_monitor_internet_stability_score') | int(0) %}
+              {{ 'green' if total > 90 else 'amber' if total > 75 else 'orange' if total > 50 else 'red' }}
+            features_position: bottom
+
+          - type: custom:mushroom-template-card
+            primary: >-
+              {{ state_attr('sensor.unifi_network_monitor_wan1_configuration', 'name') | default('WAN1') }}
+            secondary: >
+              {%- set avail = state_attr('binary_sensor.unifi_network_monitor_wan1_online', 'availability') | float(0) -%}
+              {%- set lat = state_attr('binary_sensor.unifi_network_monitor_wan1_online', 'latency_avg') | float(0) -%}
+              {%- set mbps = states('sensor.unifi_network_monitor_wan1_total_mbps') | float(0) -%}
+              {{ avail | round(1) }}% • {{ lat | round(0) }}ms • {{ mbps | round(1) }} Mbps
+            icon: mdi:wan
+            icon_color: >-
+              {{ 'green' if is_state('binary_sensor.unifi_network_monitor_wan1_online', 'on') else 'red' }}
+            badge_icon: >-
+              {{ 'mdi:check-circle' if is_state('binary_sensor.unifi_network_monitor_wan1_online', 'on') else 'mdi:close-circle' }}
+            badge_color: >-
+              {{ 'green' if is_state('binary_sensor.unifi_network_monitor_wan1_online', 'on') else 'red' }}
+            tap_action:
+              action: more-info
+              entity: binary_sensor.unifi_network_monitor_wan1_online
+
+          - type: custom:mushroom-template-card
+            primary: >-
+              {{ state_attr('sensor.unifi_network_monitor_wan2_configuration', 'name') | default('WAN2') }}
+            secondary: >
+              {%- set avail = state_attr('binary_sensor.unifi_network_monitor_wan2_online', 'availability') | float(0) -%}
+              {%- set lat = state_attr('binary_sensor.unifi_network_monitor_wan2_online', 'latency_avg') | float(0) -%}
+              {%- set mbps = states('sensor.unifi_network_monitor_wan2_total_mbps') | float(0) -%}
+              {{ avail | round(1) }}% • {{ lat | round(0) }}ms • {{ mbps | round(1) }} Mbps
+            icon: mdi:satellite-variant
+            icon_color: >-
+              {{ 'green' if is_state('binary_sensor.unifi_network_monitor_wan2_online', 'on') else 'red' }}
+            badge_icon: >-
+              {{ 'mdi:check-circle' if is_state('binary_sensor.unifi_network_monitor_wan2_online', 'on') else 'mdi:close-circle' }}
+            badge_color: >-
+              {{ 'green' if is_state('binary_sensor.unifi_network_monitor_wan2_online', 'on') else 'red' }}
+            tap_action:
+              action: more-info
+              entity: binary_sensor.unifi_network_monitor_wan2_online
+
+        grid_options:
+          columns: full
+          rows: auto
+
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: template
+            icon: mdi:clock-outline
+            content: "{{ states('sensor.unifi_network_monitor_internet_uptime_today_percent') }}%"
+            entity: sensor.unifi_network_monitor_internet_uptime_today_percent
+            icon_color: green
+            tap_action:
+              action: more-info
+          - type: template
+            icon: mdi:swap-horizontal
+            content: "{{ states('sensor.unifi_network_monitor_wan_total_outages_today') }} Failovers"
+            entity: sensor.unifi_network_monitor_wan_total_outages_today
+            icon_color: >-
+              {{ 'green' if states('sensor.unifi_network_monitor_wan_total_outages_today') | int(0) == 0 else 'orange' }}
+            tap_action:
+              action: more-info
+          - type: template
+            icon: mdi:speedometer
+            content: >-
+              {{ states('sensor.speedtest_download') | float(0) | round(1) }} Mbps
+            entity: sensor.speedtest_download
+            icon_color: blue
+            tap_action:
+              action: more-info
+          - type: template
+            icon: mdi:speedometer
+            content: "{{ states('sensor.speedtest_upload') | float(0) | round(1) }} Mbps"
+            entity: sensor.speedtest_upload
+            icon_color: green
+            tap_action:
+              action: more-info
+          - type: template
+            icon: mdi:speedometer
+            content: "{{ states('sensor.speedtest_ping') | float(0) | round(1) }} ms"
+            entity: sensor.speedtest_ping
+            icon_color: green
+            tap_action:
+              action: more-info
+          - type: template
+            icon: mdi:wan
+            content: "{{ states('sensor.unifi_network_monitor_wan_total_outages_today') }} WAN"
+            entity: sensor.unifi_network_monitor_wan_total_outages_today
+            icon_color: >-
+              {{ 'green' if states('sensor.unifi_network_monitor_wan_total_outages_today') | int(0) == 0 else 'red' }}
+            tap_action:
+              action: more-info
+          - type: template
+            icon: mdi:wan
+            content: "{{ states('sensor.unifi_network_monitor_wan1_outages_today') }} WAN1"
+            entity: sensor.unifi_network_monitor_wan1_outages_today
+            icon_color: >-
+              {{ 'green' if states('sensor.unifi_network_monitor_wan1_outages_today') | int(0) == 0 else 'red' }}
+            tap_action:
+              action: more-info
+          - type: template
+            icon: mdi:satellite-variant
+            content: "{{ states('sensor.unifi_network_monitor_wan2_outages_today') }} WAN2"
+            entity: sensor.unifi_network_monitor_wan2_outages_today
+            icon_color: >-
+              {{ 'green' if states('sensor.unifi_network_monitor_wan2_outages_today') | int(0) == 0 else 'red' }}
+            tap_action:
+              action: more-info
+        alignment: center
+        grid_options:
+          columns: full
+          rows: auto
+
+      - type: custom:modern-circular-gauge
+        entity: sensor.unifi_network_monitor_internet_stability_score
+        name: Internet Stability
+        min: 0
+        max: 100
+        unit: "%"
+        needle: false
+        adaptive_state_color: true
+        adaptive_label_color: true
+        adaptive_graph_range: false
+        segments:
+          - from: 0
+            color:
+              - 200
+              - 0
+              - 0
+          - from: 50
+            color:
+              - 255
+              - 140
+              - 0
+          - from: 75
+            color:
+              - 255
+              - 210
+              - 0
+          - from: 90
+            color:
+              - 0
+              - 200
+              - 0
+
+      - type: custom:modern-circular-gauge
+        entity: sensor.unifi_network_monitor_wan1_stability_score
+        name: WAN1 Stability
+        min: 0
+        max: 100
+        unit: "%"
+        needle: false
+        adaptive_state_color: true
+        adaptive_label_color: true
+        adaptive_graph_range: false
+        segments:
+          - from: 0
+            color:
+              - 200
+              - 0
+              - 0
+          - from: 50
+            color:
+              - 255
+              - 140
+              - 0
+          - from: 75
+            color:
+              - 255
+              - 210
+              - 0
+          - from: 90
+            color:
+              - 0
+              - 200
+              - 0
+
+      - type: custom:modern-circular-gauge
+        entity: sensor.unifi_network_monitor_wan2_stability_score
+        name: WAN2 Stability
+        min: 0
+        max: 100
+        unit: "%"
+        needle: false
+        adaptive_state_color: true
+        adaptive_label_color: true
+        adaptive_graph_range: false
+        segments:
+          - from: 0
+            color:
+              - 200
+              - 0
+              - 0
+          - from: 50
+            color:
+              - 255
+              - 140
+              - 0
+          - from: 75
+            color:
+              - 255
+              - 210
+              - 0
+          - from: 90
+            color:
+              - 0
+              - 200
+              - 0
+             
+      - type: entities
+        title: WAN Events
+        entities:
+          - entity: sensor.unifi_network_monitor_wan_last_event
+            name: Last Event
+          - type: attribute
+            entity: sensor.unifi_network_monitor_wan_last_event
+            attribute: wan
+            name: WAN
+          - type: attribute
+            entity: sensor.unifi_network_monitor_wan_last_event
+            attribute: message
+            name: Message
+          - entity: sensor.unifi_network_monitor_wan_last_event_ago_pretty
+            name: Occurred
+
+      - type: markdown
+        title: WAN Timeline
+        content: |
+          {% set items = state_attr('sensor.unifi_network_monitor_wan_event_history', 'events') or [] %}
+          {% if items | count == 0 %}
+          Keine WAN Events vorhanden
+          {% else %}
+          {% for e in items[:10] %}
+          • {{ as_datetime(e.ts).strftime('%d.%m. %H:%M') }} • {{ e.wan_name }} • {{ e.event }}
+          {% endfor %}
+          {% endif %}
+
+  - type: grid
+    column_span: 3
+    cards:
+      - type: heading
+        heading: Remote Access and VPN
+        heading_style: title
+
+  - type: grid
+    column_span: 3
+    cards:
+      - type: markdown
+        content: >
+          ## 🔐 Remote Access Operations
+
+          **Unified visibility for L2TP remote users and Teleport sessions**
+
+          Current Status: **{{ 'ACTIVE' if is_state('binary_sensor.unifi_network_monitor_vpn_active', 'on') else 'IDLE' }}** •
+          Active Sessions: **{{ states('sensor.unifi_network_monitor_vpn_active_count') }}** •
+          L2TP: **{{ states('sensor.unifi_network_monitor_vpn_remote_user_count') }}** •
+          Teleport: **{{ states('sensor.unifi_network_monitor_vpn_teleport_count') }}**
+        grid_options:
+          columns: full
+        uix:
+          style: |
+            ha-card {
+              background: linear-gradient(135deg, rgba(40,140,165,0.10) 0%, rgba(99,202,214,0.08) 100%);
+              border-left: 4px solid var(--primary-color);
+            }
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Remote Access Status
+            secondary: >
+              {%- set active = states('sensor.unifi_network_monitor_vpn_active_count') | int(0) -%}
+              {%- set src = states('sensor.unifi_network_monitor_vpn_source') -%}
+              {%- if active > 0 -%}
+                {{ active }} active • {{ src }}
+              {%- else -%}
+                No active sessions • {{ src }}
+              {%- endif -%}
+            icon: mdi:vpn
+            icon_color: >
+              {% if is_state('binary_sensor.unifi_network_monitor_vpn_active', 'on') %}
+                cyan
+              {% elif is_state('binary_sensor.unifi_network_monitor_vpn_endpoint_available', 'on') %}
+                green
+              {% else %}
+                red
+              {% endif %}
+            badge_icon: >
+              {% if is_state('binary_sensor.unifi_network_monitor_vpn_active', 'on') %}
+                mdi:check-circle
+              {% elif is_state('binary_sensor.unifi_network_monitor_vpn_endpoint_available', 'on') %}
+                mdi:clock-outline
+              {% else %}
+                mdi:close-circle
+              {% endif %}
+            badge_color: >
+              {% if is_state('binary_sensor.unifi_network_monitor_vpn_active', 'on') %}
+                cyan
+              {% elif is_state('binary_sensor.unifi_network_monitor_vpn_endpoint_available', 'on') %}
+                green
+              {% else %}
+                red
+              {% endif %}
+            tap_action:
+              action: more-info
+              entity: sensor.unifi_network_monitor_vpn_active_count
+
+          - type: custom:mushroom-template-card
+            primary: L2TP Remote Users
+            secondary: >
+              {%- set n = states('sensor.unifi_network_monitor_vpn_remote_user_count') | int(0) -%}
+              {%- if n > 0 -%}
+                {{ n }} connected
+              {%- else -%}
+                No L2TP users
+              {%- endif -%}
+            icon: mdi:account-network
+            icon_color: >
+              {{ 'green' if states('sensor.unifi_network_monitor_vpn_remote_user_count') | int(0) == 0 else 'cyan' }}
+            badge_icon: >
+              {{ 'mdi:check-circle' if states('sensor.unifi_network_monitor_vpn_remote_user_count') | int(0) > 0 else 'mdi:minus-circle-outline' }}
+            badge_color: >
+              {{ 'cyan' if states('sensor.unifi_network_monitor_vpn_remote_user_count') | int(0) > 0 else 'grey' }}
+            tap_action:
+              action: more-info
+              entity: sensor.unifi_network_monitor_vpn_remote_user_count
+
+          - type: custom:mushroom-template-card
+            primary: Teleport Sessions
+            secondary: >
+              {%- set n = states('sensor.unifi_network_monitor_vpn_teleport_count') | int(0) -%}
+              {%- if n > 0 -%}
+                {{ n }} connected
+              {%- else -%}
+                No Teleport users
+              {%- endif -%}
+            icon: mdi:airplane
+            icon_color: >
+              {{ 'green' if states('sensor.unifi_network_monitor_vpn_teleport_count') | int(0) == 0 else 'cyan' }}
+            badge_icon: >
+              {{ 'mdi:check-circle' if states('sensor.unifi_network_monitor_vpn_teleport_count') | int(0) > 0 else 'mdi:minus-circle-outline' }}
+            badge_color: >
+              {{ 'cyan' if states('sensor.unifi_network_monitor_vpn_teleport_count') | int(0) > 0 else 'grey' }}
+            tap_action:
+              action: more-info
+              entity: sensor.unifi_network_monitor_vpn_teleport_count
+
+        grid_options:
+          columns: full
+          rows: auto
+
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: template
+            icon: mdi:account-group
+            content: "{{ states('sensor.unifi_network_monitor_vpn_active_count') }} Active"
+            entity: sensor.unifi_network_monitor_vpn_active_count
+            icon_color: >
+              {{ 'cyan' if states('sensor.unifi_network_monitor_vpn_active_count') | int(0) > 0 else 'green' }}
+            tap_action:
+              action: more-info
+
+          - type: template
+            icon: mdi:account-network
+            content: "{{ states('sensor.unifi_network_monitor_vpn_remote_user_count') }} L2TP"
+            entity: sensor.unifi_network_monitor_vpn_remote_user_count
+            icon_color: >
+              {{ 'cyan' if states('sensor.unifi_network_monitor_vpn_remote_user_count') | int(0) > 0 else 'grey' }}
+            tap_action:
+              action: more-info
+
+          - type: template
+            icon: mdi:airplane
+            content: "{{ states('sensor.unifi_network_monitor_vpn_teleport_count') }} Teleport"
+            entity: sensor.unifi_network_monitor_vpn_teleport_count
+            icon_color: >
+              {{ 'cyan' if states('sensor.unifi_network_monitor_vpn_teleport_count') | int(0) > 0 else 'grey' }}
+            tap_action:
+              action: more-info
+
+          - type: template
+            icon: mdi:server-network
+            content: >
+              {% if is_state('binary_sensor.unifi_network_monitor_vpn_clients_endpoint_available', 'on') %}
+                Clients API OK
+              {% else %}
+                Clients API Down
+              {% endif %}
+            entity: binary_sensor.unifi_network_monitor_vpn_clients_endpoint_available
+            icon_color: >
+              {{ 'green' if is_state('binary_sensor.unifi_network_monitor_vpn_clients_endpoint_available', 'on') else 'red' }}
+            tap_action:
+              action: more-info
+
+        alignment: center
+        grid_options:
+          columns: full
+          rows: auto
+
+      - type: conditional
+        conditions:
+          - entity: binary_sensor.unifi_network_monitor_vpn_active
+            state: "on"
+        card:
+          type: entities
+          title: Connected Sessions
+          show_header_toggle: false
+          entities:
+            - entity: sensor.unifi_network_monitor_vpn_connected_users
+              name: Active Users
+            - entity: sensor.unifi_network_monitor_vpn_source
+              name: Source
+            - entity: sensor.unifi_network_monitor_vpn_endpoint_http
+              name: VPN Endpoint HTTP
+
+      - type: conditional
+        conditions:
+          - entity: binary_sensor.unifi_network_monitor_vpn_active
+            state: "off"
+        card:
+          type: markdown
+          content: >
+            **Remote Access Status**
+
+            No L2TP or Teleport sessions are currently connected
+
+  - type: grid
+    column_span: 3
+    cards:
+      - type: heading
+        heading: Routing
+        heading_style: title
+
+  - type: grid
+    column_span: 3
+    cards:
+      - type: custom:lumina-network-card
+        background_url: /local/community/lumina-network-card/lumina-network-card.jpg
+        font_size: 30px
+        line_width: 5
+        pos_starlink_outer: 225,355
+        pos_starlink_inner: 400,430
+        text_starlink_x: 70
+        text_starlink_y: 310
+        pos_fiber_outer: 750,350
+        pos_fiber_inner: 595,430
+        text_fiber_x: 920
+        text_fiber_y: 310
+        pos_house_outer: 500,290
+        pos_house_inner: 500,370
+        text_total_x: 560
+        text_total_y: 310
+        starlink_rx: sensor.unifi_network_monitor_wan2_rx_rate
+        starlink_tx: sensor.unifi_network_monitor_wan2_tx_rate
+        starlink_max_rx: 250
+        starlink_max_tx: 25
+        fiber_rx: sensor.unifi_network_monitor_wan1_rx_rate
+        fiber_tx: sensor.unifi_network_monitor_wan1_tx_rate
+        fiber_max_rx: 80
+        fiber_max_tx: 25
+        info_sensor: sensor.unifi_network_monitor_internet_routing_mode
+        info_text_x: 500
+        info_text_y: 500
+        info_font_size: 24px
+        grid_options:
+          columns: 24
+          rows: auto
+
+      - type: markdown
+        content: >-
+          ## 🔀 Routing Decision Matrix
+
+
+          **Current Mode:** `{{ states('sensor.unifi_network_monitor_internet_routing_mode') }}`
+
+
+          {% set mode = states('sensor.unifi_network_monitor_internet_routing_mode') %}
+
+          {% set wan1_online = is_state('binary_sensor.unifi_network_monitor_wan1_online', 'on') %}
+
+          {% set wan2_online = is_state('binary_sensor.unifi_network_monitor_wan2_online', 'on') %}
+
+          {% set wan1_name = state_attr('sensor.unifi_network_monitor_wan1_configuration', 'name') | default('Telekom DSL') %}
+
+          {% set wan2_name = state_attr('sensor.unifi_network_monitor_wan2_configuration', 'name') | default('Starlink') %}
+
+          {% set wan1_prio = state_attr('sensor.unifi_network_monitor_wan1_configuration', 'failover_priority') | int(99) %}
+
+          {% set wan2_prio = state_attr('sensor.unifi_network_monitor_wan2_configuration', 'failover_priority') | int(99) %}
+
+          {% set wan1_weight = state_attr('sensor.unifi_network_monitor_wan1_configuration', 'weight') | int(50) %}
+
+          {% set wan2_weight = state_attr('sensor.unifi_network_monitor_wan2_configuration', 'weight') | int(50) %}
+
+
+          ### Decision Logic:
+
+
+          {% if mode == 'OFFLINE' %}
+
+          🔴 **CRITICAL: Both WANs Offline**
+
+          - No internet connectivity available
+
+          - Immediate investigation required
+
+
+          {% elif mode == 'BALANCED' %}
+
+          🟢 **Load Balancing Active**
+
+          {% if wan2_weight >= wan1_weight %}
+
+          - ✅ {{ wan2_name }}: Online (Weight: {{ wan2_weight }}, Priority: {{ wan2_prio }})
+
+          - ✅ {{ wan1_name }}: Online (Weight: {{ wan1_weight }}, Priority: {{ wan1_prio }})
+
+          {% else %}
+
+          - ✅ {{ wan1_name }}: Online (Weight: {{ wan1_weight }}, Priority: {{ wan1_prio }})
+
+          - ✅ {{ wan2_name }}: Online (Weight: {{ wan2_weight }}, Priority: {{ wan2_prio }})
+
+          {% endif %}
+
+          - Traffic distributed across both links
+
+          - Combined bandwidth: {{ (states('sensor.unifi_network_monitor_wan1_total_mbps') | float(0) + states('sensor.unifi_network_monitor_wan2_total_mbps') | float(0)) | round(1) }} Mbps
+
+
+          {% elif mode == 'WAN2' %}
+
+          🟢 **{{ wan2_name }} Active (Primary)**
+
+          {% if not wan1_online %}
+
+          - ⚠️ {{ wan1_name }} OFFLINE → Backup not available!
+
+          - Failover capability lost
+
+          - Outages today: {{ states('sensor.unifi_network_monitor_wan1_outages_today') }}
+
+          {% elif wan2_prio < wan1_prio %}
+
+          - ✅ Operating on primary path (Priority {{ wan2_prio }})
+
+          - ✅ {{ wan1_name }} ready as backup (Priority {{ wan1_prio }})
+
+          - System configuration: Normal
+
+          {% endif %}
+
+          - Current bandwidth: {{ states('sensor.unifi_network_monitor_wan2_total_mbps') | float(0) | round(1) }} Mbps
+
+
+          {% elif mode == 'WAN1' %}
+
+          🟡 **{{ wan1_name }} Active (Failover Mode)**
+
+          {% if not wan2_online %}
+
+          - 🔴 {{ wan2_name }} OFFLINE → Automatic failover activated
+
+          - Reason: Primary link connectivity lost
+
+          - Outages today: {{ states('sensor.unifi_network_monitor_wan2_outages_today') }}
+
+          - ⚠️ Running on backup link - investigate primary!
+
+          {% elif wan1_prio < wan2_prio %}
+
+          - ✅ Operating on configured primary (Priority {{ wan1_prio }})
+
+          - ✅ {{ wan2_name }} ready as backup
+
+          {% else %}
+
+          - ⚠️ Unexpected routing state
+
+          - {{ wan2_name }} should be primary but {{ wan1_name }} is active
+
+          {% endif %}
+
+          - Current bandwidth: {{ states('sensor.unifi_network_monitor_wan1_total_mbps') | float(0) | round(1) }} Mbps
+
+
+          {% endif %}
+
+
+          ---
+
+
+          ### Link Health Metrics:
+
+          | Metric | {{ wan1_name }} | {{ wan2_name }} |
+
+          |--------|---------|----------|
+
+          | **Status** | {{ '🟢 Online' if wan1_online else '🔴 Offline' }} | {{ '🟢 Online' if wan2_online else '🔴 Offline' }} |
+
+          | **Availability** | {{ state_attr('binary_sensor.unifi_network_monitor_wan1_online', 'availability') | float(0) | round(1) }}% | {{ state_attr('binary_sensor.unifi_network_monitor_wan2_online', 'availability') | float(0) | round(1) }}% |
+
+          | **Latency** | {{ state_attr('binary_sensor.unifi_network_monitor_wan1_online', 'latency_avg') | float(0) | round(0) }}ms | {{ state_attr('binary_sensor.unifi_network_monitor_wan2_online', 'latency_avg') | float(0) | round(0) }}ms |
+
+          | **Current Traffic** | {{ states('sensor.unifi_network_monitor_wan1_total_mbps') | float(0) | round(1) }} Mbps | {{ states('sensor.unifi_network_monitor_wan2_total_mbps') | float(0) | round(1) }} Mbps |
+
+          | **Outages Today** | {{ states('sensor.unifi_network_monitor_wan1_outages_today') }} | {{ states('sensor.unifi_network_monitor_wan2_outages_today') }} |
+
+
+          **Last WAN Event:** {{ states('sensor.unifi_network_monitor_wan_last_event_ago_pretty') }}
+        grid_options:
+          columns: 24
+          rows: auto
+        uix:
+          style: |
+            ha-card {
+              background: var(--card-background-color);
+              border-left: 4px solid 
+                {% if states('sensor.unifi_network_monitor_internet_routing_mode') == 'WAN2' %}
+                  var(--green-color)
+                {% elif states('sensor.unifi_network_monitor_internet_routing_mode') == 'BALANCED' %}
+                  var(--green-color)
+                {% elif states('sensor.unifi_network_monitor_internet_routing_mode') == 'WAN1' %}
+                  var(--yellow-color)
+                {% elif states('sensor.unifi_network_monitor_internet_routing_mode') == 'OFFLINE' %}
+                  var(--red-color)
+                {% else %}
+                  var(--amber-color)
+                {% endif %};
+            }
+  - type: grid
+    column_span: 3
+    cards:
+      - type: heading
+        heading: Real-Time Traffic Monitoring
+      - type: custom:apexcharts-card
+        graph_span: 1h
+        update_interval: 10s
+        cache: false
+        header:
+          show: true
+          title: Download Traffic - Stacked (Last Hour)
+          show_states: true
+          colorize_states: true
+        apex_config:
+          chart:
+            height: 250
+            type: area
+            stacked: true
+            stackType: normal
+            animations:
+              enabled: true
+              easing: linear
+              dynamicAnimation:
+                speed: 1000
+          stroke:
+            curve: smooth
+            width: 0
+          fill:
+            type: solid
+            opacity: 0.8
+          legend:
+            show: true
+            position: top
+          tooltip:
+            enabled: true
+            shared: true
+            intersect: false
+          dataLabels:
+            enabled: false
+        series:
+          - entity: sensor.unifi_network_monitor_wan1_rx_rate
+            name: WAN1 Download
+            type: area
+            color: "#4caf50"
+            stroke_width: 0
+            group_by:
+              func: avg
+              duration: 30s
+          - entity: sensor.unifi_network_monitor_wan2_rx_rate
+            name: WAN2 Download
+            type: area
+            color: "#2196f3"
+            stroke_width: 0
+            group_by:
+              func: avg
+              duration: 30s
+        yaxis:
+          - min: 0
+            apex_config:
+              tickAmount: 5
+              title:
+                text: Mbit/s
+        grid_options:
+          columns: 18
+      - type: custom:apexcharts-card
+        graph_span: 1h
+        update_interval: 10s
+        cache: false
+        header:
+          show: true
+          title: Upload Traffic - Stacked (Last Hour)
+          show_states: true
+          colorize_states: true
+        apex_config:
+          chart:
+            height: 250
+            type: area
+            stacked: true
+            stackType: normal
+            animations:
+              enabled: true
+              easing: linear
+              dynamicAnimation:
+                speed: 1000
+          stroke:
+            curve: smooth
+            width: 0
+          fill:
+            type: solid
+            opacity: 0.8
+          legend:
+            show: true
+            position: top
+          tooltip:
+            enabled: true
+            shared: true
+            intersect: false
+          dataLabels:
+            enabled: false
+        series:
+          - entity: sensor.unifi_network_monitor_wan1_tx_rate
+            name: WAN1 Upload
+            type: area
+            color: "#2e7d32"
+            stroke_width: 0
+            group_by:
+              func: avg
+              duration: 30s
+          - entity: sensor.unifi_network_monitor_wan2_tx_rate
+            name: WAN2 Upload
+            type: area
+            color: "#1565c0"
+            stroke_width: 0
+            group_by:
+              func: avg
+              duration: 30s
+        yaxis:
+          - min: 0
+            apex_config:
+              tickAmount: 5
+              title:
+                text: Mbit/s
+        grid_options:
+          columns: 18
+      - type: custom:apexcharts-card
+        graph_span: 1h
+        update_interval: 10s
+        cache: false
+        header:
+          show: true
+          title: Live Traffic (Last Hour)
+          show_states: true
+          colorize_states: true
+        apex_config:
+          chart:
+            height: 350
+            animations:
+              enabled: true
+              easing: linear
+              dynamicAnimation:
+                speed: 1000
+          stroke:
+            curve: smooth
+            width: 2
+          legend:
+            show: true
+            position: top
+          tooltip:
+            enabled: true
+            shared: true
+        series:
+          - entity: sensor.unifi_network_monitor_internet_total_rx_rate
+            name: Total ↓ Download
+            type: area
+            color: "#0080ff"
+            opacity: 0.3
+            stroke_width: 2
+            group_by:
+              func: avg
+              duration: 30s
+          - entity: sensor.unifi_network_monitor_internet_total_tx_rate
+            name: Total ↑ Upload
+            type: line
+            color: "#a020f0"
+            opacity: 1
+            stroke_width: 2
+            group_by:
+              func: avg
+              duration: 30s
+        yaxis:
+          - min: 0
+            apex_config:
+              tickAmount: 5
+              title:
+                text: Mbit/s
+        grid_options:
+          columns: full
+      - type: custom:apexcharts-card
+        graph_span: 6h
+        update_interval: 1min
+        header:
+          show: true
+          title: Traffic & Latency Correlation (6h)
+          show_states: true
+          colorize_states: true
+        series:
+          - entity: sensor.speedtest_ping
+            name: Latency
+            type: line
+            stroke_width: 2
+            color: "#ff3333"
+            yaxis_id: latency
+            group_by:
+              func: avg
+              duration: 5min
+          - entity: sensor.unifi_network_monitor_internet_total_rx_rate
+            name: Download
+            type: area
+            stroke_width: 1
+            color: "#0080ff"
+            opacity: 0.2
+            yaxis_id: bandwidth
+            group_by:
+              func: avg
+              duration: 5min
+          - entity: sensor.unifi_network_monitor_internet_total_tx_rate
+            name: Upload
+            type: area
+            stroke_width: 1
+            color: "#a020f0"
+            opacity: 0.2
+            yaxis_id: bandwidth
+            group_by:
+              func: avg
+              duration: 5min
+        yaxis:
+          - id: latency
+            show: true
+            min: 0
+            apex_config:
+              tickAmount: 4
+              title:
+                text: Latency (ms)
+          - id: bandwidth
+            show: true
+            opposite: true
+            min: 0
+            apex_config:
+              tickAmount: 4
+              title:
+                text: Mbit/s
+        apex_config:
+          chart:
+            height: 300
+          stroke:
+            curve: smooth
+          legend:
+            show: true
+        grid_options:
+          columns: full
+      - type: custom:apexcharts-card
+        graph_span: 24h
+        update_interval: 5min
+        header:
+          show: true
+          title: Traffic & Latency Correlation (24h)
+          show_states: true
+          colorize_states: true
+        series:
+          - entity: sensor.speedtest_ping
+            name: Latency
+            type: line
+            stroke_width: 2
+            color: "#ff3333"
+            yaxis_id: latency
+            group_by:
+              func: avg
+              duration: 30min
+          - entity: sensor.unifi_network_monitor_internet_total_rx_rate
+            name: Download
+            type: area
+            stroke_width: 1
+            color: "#0080ff"
+            opacity: 0.2
+            yaxis_id: bandwidth
+            group_by:
+              func: avg
+              duration: 30min
+          - entity: sensor.unifi_network_monitor_internet_total_tx_rate
+            name: Upload
+            type: area
+            stroke_width: 1
+            color: "#a020f0"
+            opacity: 0.2
+            yaxis_id: bandwidth
+            group_by:
+              func: avg
+              duration: 30min
+        yaxis:
+          - id: latency
+            show: true
+            min: 0
+            apex_config:
+              tickAmount: 4
+              title:
+                text: Latency (ms)
+          - id: bandwidth
+            show: true
+            opposite: true
+            min: 0
+            apex_config:
+              tickAmount: 4
+              title:
+                text: Mbit/s
+        apex_config:
+          chart:
+            height: 300
+          stroke:
+            curve: smooth
+          legend:
+            show: true
+        grid_options:
+          columns: full
+  - type: grid
+    column_span: 3
+    cards:
+      - type: heading
+        heading: Network Stability & Events
+      - type: history-graph
+        title: WAN Availability Timeline (24h)
+        hours_to_show: 24
+        refresh_interval: 60
+        logarithmic_scale: false
+        entities:
+          - entity: binary_sensor.unifi_network_monitor_wan1_online
+            name: WAN1 (Fiber)
+          - entity: binary_sensor.unifi_network_monitor_wan2_online
+            name: WAN2 (Starlink)
+        grid_options:
+          columns: full
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: template
+            icon: mdi:alert-circle
+            content: WAN Event
+            icon_color: red
+            tap_action:
+              action: more-info
+              entity: sensor.unifi_network_monitor_wan_total_outages_today
+            uix:
+              style: |
+                ha-card {
+                  {% if states('sensor.unifi_network_monitor_wan_total_outages_today') | int(0) > 0 %}
+                    animation: blink 2s ease-in-out infinite;
+                  {% endif %}
+                }
+                @keyframes blink {
+                  0%, 100% { opacity: 1; }
+                  50% { opacity: 0.3; }
+                }
+        alignment: center
+        grid_options:
+          columns: full
+  - type: grid
+    cards:
+      - type: gauge
+        entity: sensor.unifi_network_monitor_internet_uptime_today_percent
+        name: Uptime Today
+        min: 0
+        max: 100
+        severity:
+          green: 99
+          yellow: 95
+          red: 0
+        needle: true
+      - type: custom:mushroom-entity-card
+        entity: sensor.speedtest_download
+        name: Download Speed
+        icon: mdi:download
+        icon_color: blue
+        tap_action:
+          action: more-info
+      - type: custom:mushroom-entity-card
+        entity: sensor.speedtest_upload
+        name: Upload Speed
+        icon: mdi:upload
+        icon_color: purple
+        tap_action:
+          action: more-info
+    column_span: 3
+  - type: grid
+    column_span: 2
+    cards:
+      - type: heading
+        heading: WAN1 Analytics
+      - type: custom:apexcharts-card
+        graph_span: 24h
+        header:
+          show: true
+          title: WAN1 Traffic Distribution
+          show_states: true
+        series:
+          - entity: sensor.unifi_network_monitor_wan1_rx_rate
+            name: Download
+            type: area
+            color: "#0080ff"
+            opacity: 0.3
+            group_by:
+              func: avg
+              duration: 15min
+          - entity: sensor.unifi_network_monitor_wan1_tx_rate
+            name: Upload
+            type: area
+            color: "#a020f0"
+            opacity: 0.3
+            group_by:
+              func: avg
+              duration: 15min
+        apex_config:
+          chart:
+            height: 250
+          stroke:
+            curve: smooth
+        yaxis:
+          - min: 0
+            apex_config:
+              title:
+                text: Mbit/s
+      - chart_type: bar
+        period: day
+        type: statistics-graph
+        title: WAN1 Daily Usage (7d, Utility Meter)
+        days_to_show: 7
+        stat_types:
+          - change
+        entities:
+          - entity: sensor.unifi_network_monitor_wan1_rx_daily_gb
+            name: Download
+          - entity: sensor.unifi_network_monitor_wan1_tx_daily_gb
+            name: Upload
+        max_y_axis: 150
+  - type: grid
+    column_span: 2
+    cards:
+      - type: heading
+        heading: WAN2 Analytics
+      - type: custom:apexcharts-card
+        graph_span: 24h
+        header:
+          show: true
+          title: WAN2 Traffic Distribution
+          show_states: true
+        series:
+          - entity: sensor.unifi_network_monitor_wan2_rx_rate
+            name: Download
+            type: area
+            color: "#0080ff"
+            opacity: 0.3
+            group_by:
+              func: avg
+              duration: 15min
+          - entity: sensor.unifi_network_monitor_wan2_tx_rate
+            name: Upload
+            type: area
+            color: "#a020f0"
+            opacity: 0.3
+            group_by:
+              func: avg
+              duration: 15min
+        apex_config:
+          chart:
+            height: 250
+          stroke:
+            curve: smooth
+        yaxis:
+          - min: 0
+            apex_config:
+              title:
+                text: Mbit/s
+      - chart_type: bar
+        period: day
+        type: statistics-graph
+        title: WAN2 Daily Usage (7d, Utility Meter)
+        days_to_show: 7
+        stat_types:
+          - change
+        entities:
+          - entity: sensor.unifi_network_monitor_wan2_rx_daily_gb
+            name: Download
+          - entity: sensor.unifi_network_monitor_wan2_tx_daily_gb
+            name: Upload
+        max_y_axis: 150
+        fit_y_data: false
+        logarithmic_scale: false
+  - type: grid
+    column_span: 3
+    cards:
+      - type: heading
+        heading: Diagnostic Panel
+      - type: entities
+        title: Connection Health Checks
+        show_header_toggle: false
+        state_color: true
+        entities:
+          - entity: binary_sensor.unifi_network_monitor_internet_online
+            name: Internet Connectivity
+            icon: mdi:web
+          - entity: binary_sensor.unifi_network_monitor_wan_api_fresh
+            name: UniFi API Fresh
+            icon: mdi:api
+          - entity: binary_sensor.unifi_network_monitor_snmp_traffic_healthy
+            name: SNMP Traffic Healthy
+            icon: mdi:counter
+          - entity: binary_sensor.unifi_network_monitor_vpn_endpoint_available
+            name: VPN Endpoint Available
+            icon: mdi:vpn
+          - type: divider
+          - entity: binary_sensor.unifi_network_monitor_wan1_online
+            name: WAN1 Link Status
+            secondary_info: >-
+              {{ state_attr('binary_sensor.unifi_network_monitor_wan1_online', 'availability') }}% uptime • {{ state_attr('binary_sensor.unifi_network_monitor_wan1_online', 'latency_avg') }}ms latency
+          - entity: binary_sensor.unifi_network_monitor_wan2_online
+            name: WAN2 Link Status
+            secondary_info: >-
+              {{ state_attr('binary_sensor.unifi_network_monitor_wan2_online', 'availability') }}% uptime • {{ state_attr('binary_sensor.unifi_network_monitor_wan2_online', 'latency_avg') }}ms latency
+          - type: divider
+          - entity: sensor.unifi_network_monitor_wan1_latency_raw
+            name: WAN1 Latency
+            icon: mdi:timer-outline
+          - entity: sensor.unifi_network_monitor_wan2_latency_raw
+            name: WAN2 Latency
+            icon: mdi:sine-wave
+      - type: entities
+        title: Event Counters
+        show_header_toggle: false
+        entities:
+          - entity: sensor.unifi_network_monitor_wan_total_outages_today
+            name: WAN Events Today
+            icon: mdi:swap-horizontal
+            secondary_info: last-changed
+          - entity: sensor.unifi_network_monitor_wan1_outages_today
+            name: WAN1 Outages
+            icon: mdi:alert-circle
+            secondary_info: last-changed
+          - entity: sensor.unifi_network_monitor_wan2_outages_today
+            name: WAN2 Outages
+            icon: mdi:alert-circle
+            secondary_info: last-changed
+          - entity: sensor.unifi_network_monitor_wan_last_event_ago_pretty
+            name: Last WAN Event
+            icon: mdi:clock-outline
+  - type: grid
+    column_span: 3
+    cards:
+      - type: heading
+        heading: Statistics
+        heading_style: title
+      - chart_type: bar
+        period: day
+        type: statistics-graph
+        title: WAN1 vs WAN2 Daily Usage (7d, Utility Meter)
+        days_to_show: 7
+        stat_types:
+          - change
+        entities:
+          - entity: sensor.unifi_network_monitor_wan1_rx_daily_gb
+            name: WAN1 Download
+          - entity: sensor.unifi_network_monitor_wan1_tx_daily_gb
+            name: WAN1 Upload
+          - entity: sensor.unifi_network_monitor_wan2_rx_daily_gb
+            name: WAN2 Download
+          - entity: sensor.unifi_network_monitor_wan2_tx_daily_gb
+            name: WAN2 Upload
+        grid_options:
+          columns: full
+      - chart_type: bar
+        period: month
+        type: statistics-graph
+        title: Monthly Bandwidth Usage (Utility Meter)
+        stat_types:
+          - change
+        entities:
+          - entity: sensor.unifi_network_monitor_wan1_rx_monthly_gb
+            name: WAN1 Download
+          - entity: sensor.unifi_network_monitor_wan1_tx_monthly_gb
+            name: WAN1 Upload
+          - entity: sensor.unifi_network_monitor_wan2_rx_monthly_gb
+            name: WAN2 Download
+          - entity: sensor.unifi_network_monitor_wan2_tx_monthly_gb
+            name: WAN2 Upload
+        grid_options:
+          columns: full
+  - type: grid
+    column_span: 3
+    cards:
+      - type: heading
+        heading: Quick Actions
+      - type: button
+        name: View Logs
+        icon: mdi:text-box-search
+        tap_action:
+          action: navigate
+          navigation_path: /config/logs
+      - type: button
+        name: Reset Counters
+        icon: mdi:restore
+        tap_action:
+          action: call-service
+          service: counter.reset
+          target:
+            entity_id:
+              - sensor.unifi_network_monitor_wan_total_outages_today
+              - sensor.unifi_network_monitor_wan1_outages_today
+              - sensor.unifi_network_monitor_wan2_outages_today
+        confirmation:
+          text: Reset all daily counters?

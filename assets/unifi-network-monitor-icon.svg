@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="UniFi Network Monitor icon">
+  <defs>
+    <linearGradient id="bg" x1="28" y1="20" x2="230" y2="234" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#10B9CF"/>
+      <stop offset="0.58" stop-color="#0D142B"/>
+      <stop offset="1" stop-color="#4D46E5"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <rect x="18" y="18" width="220" height="220" rx="54" fill="url(#bg)" filter="url(#shadow)"/>
+  <rect x="28" y="28" width="200" height="200" rx="42" fill="none" stroke="#EFFFFF" stroke-opacity="0.82" stroke-width="6"/>
+  <rect x="38" y="38" width="180" height="180" rx="34" fill="none" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="3"/>
+  <path d="M65 92a75 75 0 0 1 126 0" fill="none" stroke="#F5FFFF" stroke-linecap="round" stroke-width="10"/>
+  <path d="M75 97a61 61 0 0 1 106 0" fill="none" stroke="#A4F5FF" stroke-opacity="0.45" stroke-linecap="round" stroke-width="4"/>
+  <path d="M128 90 L79 157 M128 90 L177 157 M128 90 L128 180 M79 157 L128 142 M177 157 L128 142 M128 180 L128 142" stroke="#F5FFFF" stroke-opacity="0.9" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/>
+  <circle cx="128" cy="90" r="18" fill="#F5FFFF"/>
+  <circle cx="79" cy="157" r="15" fill="#F5FFFF"/>
+  <circle cx="177" cy="157" r="15" fill="#F5FFFF"/>
+  <circle cx="128" cy="180" r="16" fill="#F5FFFF"/>
+  <circle cx="128" cy="142" r="11" fill="#0B889F" stroke="#A4F5FF" stroke-width="4"/>
+  <path d="M68 201H86L94 190L105 213L116 201H137L145 194L155 209L164 201H188" fill="none" stroke="#A4F5FF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
