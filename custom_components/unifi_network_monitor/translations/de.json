@@ -70,7 +70,7 @@
     "step": {
       "init": {
         "title": "UniFi Network Monitor Optionen",
-        "description": "Optionale Einstellungen. Der Teleport Bereich akzeptiert entweder CIDR, zum Beispiel 192.168.2.0/24, oder einen einfachen Prefix, zum Beispiel 192.168.2. Optionale SNMP Einstellungen werden für Live WAN Traffic Counter genutzt. Die WAN Webhook ID wird unter /api/webhook/<id> verwendet. Wenn UniFi Teleport Clients nur als normale Clients ausgibt, kannst du hier Namen, Hostnames, MACs oder IP Fragmente kommasepariert eintragen.",
+        "description": "Optionale Einstellungen. Der Teleport Bereich akzeptiert entweder CIDR, zum Beispiel 192.168.2.0/24, oder einen einfachen Prefix, zum Beispiel 192.168.2. Optionale SNMP Einstellungen werden für Live WAN Traffic Counter genutzt. Die WAN Webhook ID wird unter /api/webhook/{webhook_id} verwendet. Wenn UniFi Teleport Clients nur als normale Clients ausgibt, kannst du hier Namen, Hostnames, MACs oder IP Fragmente kommasepariert eintragen.",
         "data": {
           "teleport_prefix": "Teleport IP Bereich oder Prefix",
           "api_key": "Integration API Key",
