@@ -1,7 +1,7 @@
 # UniFi Network Monitor
 
 <p align="center">
-  <img src="brands/unifi_network_monitor/logo.png" alt="UniFi Network Monitor" width="160">
+  <img src="assets/unifi-network-monitor-logo.png" alt="UniFi Network Monitor" width="160">
 </p>
 
 
@@ -12,10 +12,6 @@ Repository URL:
 ```text
 https://github.com/Cyrelion/unifi-network-monitor
 ```
-
-## Version
-
-Current stable version: `1.0.0`
 
 ## Features
 
