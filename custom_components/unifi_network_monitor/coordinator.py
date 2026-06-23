@@ -16,7 +16,14 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import UniFiAuthError, UniFiNetworkMonitorClient, UniFiRequestError
-from .const import DEFAULT_SCAN_INTERVAL, DEFAULT_WEBHOOK_HISTORY_LIMIT, DOMAIN, NAME
+from .const import (
+    CONF_EXPECTED_WAN_TOPOLOGY,
+    DEFAULT_EXPECTED_WAN_TOPOLOGY,
+    DEFAULT_SCAN_INTERVAL,
+    DEFAULT_WEBHOOK_HISTORY_LIMIT,
+    DOMAIN,
+    NAME,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -183,6 +190,15 @@ class UniFiNetworkMonitorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     def _merge_local_state(self, data: dict[str, Any]) -> None:
         """Inject local webhook/event-history state into the coordinator payload."""
+        meta = data.setdefault("meta", {})
+        meta["expected_wan_topology"] = self.entry.options.get(
+            CONF_EXPECTED_WAN_TOPOLOGY,
+            self.entry.data.get(
+                CONF_EXPECTED_WAN_TOPOLOGY,
+                DEFAULT_EXPECTED_WAN_TOPOLOGY,
+            ),
+        )
+
         events = copy.deepcopy(self._wan_events)
         data["wan_event_history"] = {
             "events": events,

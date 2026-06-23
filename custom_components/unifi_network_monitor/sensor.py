@@ -14,6 +14,8 @@ from .const import DOMAIN
 from .coordinator import UniFiNetworkMonitorCoordinator
 from .entity import (
     UniFiNetworkMonitorEntity,
+    configured_topology,
+    expected_wans,
     float_value,
     is_wan_online,
     latency,
@@ -78,24 +80,30 @@ def _routing_attrs(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def _internet_health_state(data: dict[str, Any]) -> str:
-    """Return aggregated Internet health state from WAN1/WAN2."""
-    wan1_online = is_wan_online(data, "WAN")
-    wan2_online = is_wan_online(data, "WAN2")
-    if wan1_online and wan2_online:
+    """Return aggregated Internet health state from expected WAN uplinks."""
+    expected = expected_wans(data)
+    online = {wan for wan in expected if is_wan_online(data, wan)}
+
+    if not expected:
+        return "Unknown"
+    if len(online) == len(expected):
         return "Online"
-    if wan1_online or wan2_online:
+    if online:
         return "Degraded"
     return "Offline"
 
 
 def _internet_stability_score(data: dict[str, Any]) -> float:
-    """Return aggregated stability score for all currently online WAN links."""
+    """Return aggregated stability score for expected and currently online WAN links."""
+    expected = expected_wans(data)
     scores: list[float] = []
-    if is_wan_online(data, "WAN"):
+
+    if "WAN" in expected and is_wan_online(data, "WAN"):
         scores.append(float(stability_score(data, "WAN", 12)))
-    if is_wan_online(data, "WAN2"):
+    if "WAN2" in expected and is_wan_online(data, "WAN2"):
         scores.append(float(stability_score(data, "WAN2", 30)))
-    if not scores:
+
+    if not expected or not scores:
         return 0
     return round(sum(scores) / len(scores), 1)
 
@@ -114,12 +122,29 @@ def _internet_stability_state(data: dict[str, Any]) -> str:
 
 def _internet_summary_attrs(data: dict[str, Any]) -> dict[str, Any]:
     """Return shared Internet summary attributes."""
+    expected = expected_wans(data)
+    online = {wan for wan in expected if is_wan_online(data, wan)}
+
+    if not expected:
+        decision_reason = "no_expected_wans"
+    elif len(online) == len(expected):
+        decision_reason = "all_expected_wans_online"
+    elif online:
+        decision_reason = "partial_expected_wan_failure"
+    else:
+        decision_reason = "all_expected_wans_offline"
+
     return {
+        "expected_wan_topology": configured_topology(data),
+        "expected_wans": sorted(expected),
+        "wan1_expected": "WAN" in expected,
+        "wan2_expected": "WAN2" in expected,
         "wan1_online": is_wan_online(data, "WAN"),
         "wan2_online": is_wan_online(data, "WAN2"),
         "wan1_stability_score": stability_score(data, "WAN", 12),
         "wan2_stability_score": stability_score(data, "WAN2", 30),
         "routing_mode": routing_mode(data),
+        "decision_reason": decision_reason,
         "meta": data.get("meta", {}),
     }
 

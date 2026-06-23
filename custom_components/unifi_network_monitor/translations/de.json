@@ -25,7 +25,8 @@
           "wan2_tx_oid": "WAN2 TX OID",
           "webhook_enabled": "WAN Alarm Manager Webhook aktivieren",
           "webhook_local_only": "Nur lokale Webhook Requests akzeptieren",
-          "teleport_client_matchers": "Teleport Client Matcher"
+          "teleport_client_matchers": "Teleport Client Matcher",
+          "expected_wan_topology": "Erwartete WAN Topologie"
         }
       },
       "reconfigure": {
@@ -52,7 +53,8 @@
           "wan2_tx_oid": "WAN2 TX OID",
           "webhook_enabled": "WAN Alarm Manager Webhook aktivieren",
           "webhook_local_only": "Nur lokale Webhook Requests akzeptieren",
-          "teleport_client_matchers": "Teleport Client Matcher"
+          "teleport_client_matchers": "Teleport Client Matcher",
+          "expected_wan_topology": "Erwartete WAN Topologie"
         }
       }
     },
@@ -87,7 +89,8 @@
           "webhook_enabled": "WAN Alarm Manager Webhook aktivieren",
           "webhook_local_only": "Nur lokale Webhook Requests akzeptieren",
           "webhook_id": "WAN Webhook ID",
-          "teleport_client_matchers": "Teleport Client Matcher"
+          "teleport_client_matchers": "Teleport Client Matcher",
+          "expected_wan_topology": "Erwartete WAN Topologie"
         }
       }
     }
