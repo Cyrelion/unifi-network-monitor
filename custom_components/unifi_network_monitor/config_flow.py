@@ -13,10 +13,12 @@ from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME, CONF_VE
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
+from homeassistant.helpers import selector
 
 from .api import UniFiAuthError, UniFiNetworkMonitorClient, UniFiNetworkMonitorError
 from .const import (
     CONF_API_KEY,
+    CONF_EXPECTED_WAN_TOPOLOGY,
     CONF_SCAN_INTERVAL,
     CONF_SITE,
     CONF_SITE_NAME,
@@ -34,6 +36,7 @@ from .const import (
     CONF_WEBHOOK_ENABLED,
     CONF_WEBHOOK_ID,
     CONF_WEBHOOK_LOCAL_ONLY,
+    DEFAULT_EXPECTED_WAN_TOPOLOGY,
     DEFAULT_HOST,
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_SITE,
@@ -48,6 +51,10 @@ from .const import (
     DEFAULT_WAN1_TX_OID,
     DEFAULT_WAN2_RX_OID,
     DEFAULT_WAN2_TX_OID,
+    TOPOLOGY_AUTO,
+    TOPOLOGY_DUAL_WAN,
+    TOPOLOGY_WAN1_ONLY,
+    TOPOLOGY_WAN2_ONLY,
     DEFAULT_WEBHOOK_ENABLED,
     DEFAULT_WEBHOOK_LOCAL_ONLY,
     DOMAIN,
@@ -82,6 +89,20 @@ def _schema(user_input: dict[str, Any] | None = None) -> vol.Schema:
             ),
             vol.Optional(CONF_SNMP_TIMEOUT, default=values.get(CONF_SNMP_TIMEOUT, DEFAULT_SNMP_TIMEOUT)): vol.All(
                 vol.Coerce(int), vol.Range(min=1, max=30)
+            ),
+            vol.Required(
+                CONF_EXPECTED_WAN_TOPOLOGY,
+                default=values.get(CONF_EXPECTED_WAN_TOPOLOGY, DEFAULT_EXPECTED_WAN_TOPOLOGY),
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=[
+                        selector.SelectOptionDict(value=TOPOLOGY_AUTO, label="Auto"),
+                        selector.SelectOptionDict(value=TOPOLOGY_WAN1_ONLY, label="WAN1 only"),
+                        selector.SelectOptionDict(value=TOPOLOGY_WAN2_ONLY, label="WAN2 only"),
+                        selector.SelectOptionDict(value=TOPOLOGY_DUAL_WAN, label="WAN1 + WAN2"),
+                    ],
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                )
             ),
             vol.Optional(CONF_WAN1_RX_OID, default=values.get(CONF_WAN1_RX_OID, DEFAULT_WAN1_RX_OID)): str,
             vol.Optional(CONF_WAN1_TX_OID, default=values.get(CONF_WAN1_TX_OID, DEFAULT_WAN1_TX_OID)): str,
@@ -129,6 +150,20 @@ def _options_schema(config_entry: ConfigEntry) -> vol.Schema:
             vol.Optional(CONF_SNMP_TIMEOUT, default=current(CONF_SNMP_TIMEOUT, DEFAULT_SNMP_TIMEOUT)): vol.All(
                 vol.Coerce(int), vol.Range(min=1, max=30)
             ),
+            vol.Required(
+                CONF_EXPECTED_WAN_TOPOLOGY,
+                default=current(CONF_EXPECTED_WAN_TOPOLOGY, DEFAULT_EXPECTED_WAN_TOPOLOGY),
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=[
+                        selector.SelectOptionDict(value=TOPOLOGY_AUTO, label="Auto"),
+                        selector.SelectOptionDict(value=TOPOLOGY_WAN1_ONLY, label="WAN1 only"),
+                        selector.SelectOptionDict(value=TOPOLOGY_WAN2_ONLY, label="WAN2 only"),
+                        selector.SelectOptionDict(value=TOPOLOGY_DUAL_WAN, label="WAN1 + WAN2"),
+                    ],
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                )
+            ),
             vol.Optional(CONF_WAN1_RX_OID, default=current(CONF_WAN1_RX_OID, DEFAULT_WAN1_RX_OID)): str,
             vol.Optional(CONF_WAN1_TX_OID, default=current(CONF_WAN1_TX_OID, DEFAULT_WAN1_TX_OID)): str,
             vol.Optional(CONF_WAN2_RX_OID, default=current(CONF_WAN2_RX_OID, DEFAULT_WAN2_RX_OID)): str,
@@ -155,6 +190,10 @@ def _clean_optional_settings(user_input: dict[str, Any]) -> dict[str, Any]:
     )
     cleaned[CONF_SNMP_COMMUNITY] = cleaned.get(CONF_SNMP_COMMUNITY) or ""
     cleaned[CONF_SNMP_ENABLED] = bool(cleaned.get(CONF_SNMP_ENABLED) and cleaned[CONF_SNMP_COMMUNITY])
+    cleaned[CONF_EXPECTED_WAN_TOPOLOGY] = (
+        cleaned.get(CONF_EXPECTED_WAN_TOPOLOGY)
+        or DEFAULT_EXPECTED_WAN_TOPOLOGY
+    ).strip().lower()
     for key in (CONF_WAN1_RX_OID, CONF_WAN1_TX_OID, CONF_WAN2_RX_OID, CONF_WAN2_TX_OID):
         cleaned[key] = (cleaned.get(key) or "").strip()
     cleaned[CONF_WEBHOOK_ENABLED] = bool(cleaned.get(CONF_WEBHOOK_ENABLED, DEFAULT_WEBHOOK_ENABLED))

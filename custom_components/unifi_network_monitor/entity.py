@@ -7,7 +7,13 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, NAME
+from .const import (
+    DOMAIN,
+    NAME,
+    TOPOLOGY_DUAL_WAN,
+    TOPOLOGY_WAN1_ONLY,
+    TOPOLOGY_WAN2_ONLY,
+)
 from .coordinator import UniFiNetworkMonitorCoordinator
 
 
@@ -48,6 +54,43 @@ def int_value(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError):
         return default
 
+
+
+
+def configured_topology(data: dict[str, Any]) -> str:
+    """Return configured expected WAN topology."""
+    return str((data.get("meta") or {}).get("expected_wan_topology") or "auto").lower()
+
+
+def auto_expected_wans(data: dict[str, Any]) -> set[str]:
+    """Best-effort detection of expected WAN uplinks from available data."""
+    expected: set[str] = set()
+
+    wan1_cfg = wan_config(data, "WAN") or {}
+    wan2_cfg = wan_config(data, "WAN2") or {}
+    wan1_stats = wan_stats(data, "WAN")
+    wan2_stats = wan_stats(data, "WAN2")
+
+    if wan1_cfg or wan1_stats:
+        expected.add("WAN")
+    if wan2_cfg or wan2_stats:
+        expected.add("WAN2")
+
+    return expected
+
+
+def expected_wans(data: dict[str, Any]) -> set[str]:
+    """Return WAN uplinks that should participate in health evaluation."""
+    topology = configured_topology(data)
+
+    if topology == TOPOLOGY_WAN1_ONLY:
+        return {"WAN"}
+    if topology == TOPOLOGY_WAN2_ONLY:
+        return {"WAN2"}
+    if topology == TOPOLOGY_DUAL_WAN:
+        return {"WAN", "WAN2"}
+
+    return auto_expected_wans(data)
 
 def is_wan_online(data: dict[str, Any], key: str) -> bool:
     """Return whether a WAN link looks online according to UniFi uptime stats."""
