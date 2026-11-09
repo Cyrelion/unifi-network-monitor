@@ -56,6 +56,14 @@
           "teleport_client_matchers": "Teleport Client Matcher",
           "expected_wan_topology": "Erwartete WAN Topologie"
         }
+      },
+      "reauth_confirm": {
+        "title": "UniFi Network Monitor erneut anmelden",
+        "description": "Die Anmeldung an deiner UniFi OS Console ist fehlgeschlagen. Gib die aktuellen Zugangsdaten ein. Deine übrigen Einstellungen und Entitäten bleiben erhalten.",
+        "data": {
+          "username": "Benutzername",
+          "password": "Passwort"
+        }
       }
     },
     "error": {

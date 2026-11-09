@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Mapping
 from typing import Any
 
 import voluptuous as vol
@@ -247,6 +248,53 @@ class UniFiNetworkMonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def async_get_options_flow(config_entry: ConfigEntry) -> config_entries.OptionsFlow:
         """Create the options flow."""
         return UniFiNetworkMonitorOptionsFlowHandler()
+
+    async def async_step_reauth(self, entry_data: Mapping[str, Any]) -> FlowResult:
+        """Start reauthentication after a UniFi login failure."""
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Validate replacement credentials and update the existing entry."""
+        entry = self._get_reauth_entry()
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            credentials = {
+                CONF_USERNAME: user_input[CONF_USERNAME],
+                CONF_PASSWORD: user_input[CONF_PASSWORD],
+            }
+            updated_data = {**entry.data, **credentials}
+            try:
+                await _validate(self.hass, updated_data)
+            except UniFiAuthError:
+                errors["base"] = "invalid_auth"
+            except UniFiNetworkMonitorError:
+                errors["base"] = "cannot_connect"
+            except Exception:  # noqa: BLE001
+                _LOGGER.exception("Unexpected error while reauthenticating UniFi Network Monitor")
+                errors["base"] = "unknown"
+            else:
+                host = UniFiNetworkMonitorClient._clean_host(entry.data[CONF_HOST])
+                await self.async_set_unique_id(f"{host}:{entry.data[CONF_SITE]}")
+                self._abort_if_unique_id_mismatch(reason="wrong_site")
+                return self.async_update_reload_and_abort(
+                    entry, data_updates=credentials
+                )
+
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_USERNAME, default=entry.data.get(CONF_USERNAME, "")
+                    ): str,
+                    vol.Required(CONF_PASSWORD): str,
+                }
+            ),
+            errors=errors,
+        )
 
     async def async_step_reconfigure(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle reconfiguration of an existing config entry."""

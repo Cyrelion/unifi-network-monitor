@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1
+
+- Add Home Assistant reauthentication flow for expired or changed UniFi OS credentials.
+- Validate replacement credentials before updating and reloading the existing config entry.
+- Preserve site configuration, options and entities during reauthentication.
+
 ## 1.0.2
 
 - Classify UniFi `Temporary Internet Disconnection` alerts as WAN outage events so per-WAN outage counters increment correctly.

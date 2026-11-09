@@ -56,6 +56,14 @@
           "teleport_client_matchers": "Teleport client matchers",
           "expected_wan_topology": "Expected WAN topology"
         }
+      },
+      "reauth_confirm": {
+        "title": "Reauthenticate UniFi Network Monitor",
+        "description": "Authentication with your UniFi OS Console failed. Enter your current credentials. Your other settings and entities will be preserved.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        }
       }
     },
     "error": {
