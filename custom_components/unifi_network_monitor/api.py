@@ -11,6 +11,7 @@ from typing import Any
 
 from aiohttp import ClientError, ClientResponseError, ClientSession, DummyCookieJar
 
+from .security import safe_wan_config_rows
 from .const import (
     DEFAULT_SNMP_PORT,
     DEFAULT_SNMP_TIMEOUT,
@@ -452,7 +453,9 @@ class UniFiNetworkMonitorClient:
         client_inventory = await self.async_fetch_local_client_inventory(clients_body)
 
         wan_config = self._rows(wanconf_body)
-        wan_config = [row for row in wan_config if row.get("purpose") == "wan"]
+        wan_config = safe_wan_config_rows(
+            row for row in wan_config if row.get("purpose") == "wan"
+        )
 
         health_rows = self._rows(health_body)
         wan_health_raw = [row for row in health_rows if row.get("subsystem") == "wan"]

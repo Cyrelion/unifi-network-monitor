@@ -11,6 +11,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
+from .security import safe_public_meta, safe_wan_health, safe_vpn_rows, safe_wan_event, safe_wan_events
+from .security import safe_wan_config_rows
 from .coordinator import UniFiNetworkMonitorCoordinator
 from .entity import (
     UniFiNetworkMonitorEntity,
@@ -48,7 +50,6 @@ def _wan_config_attrs(data: dict[str, Any], group: str) -> dict[str, Any]:
         "load_balance_type": row.get("wan_load_balance_type", "N/A"),
         "failover_priority": row.get("wan_failover_priority", "N/A"),
         "weight": row.get("wan_load_balance_weight", "N/A"),
-        "raw": row,
     }
 
 
@@ -74,7 +75,7 @@ def _routing_attrs(data: dict[str, Any]) -> dict[str, Any]:
         "wan2_availability": float_value(wan_stats(data, "WAN2").get("availability")),
         "wan1_latency": float_value(wan_stats(data, "WAN").get("latency_average")),
         "wan2_latency": float_value(wan_stats(data, "WAN2").get("latency_average")),
-        "meta": data.get("meta", {}),
+        "meta": safe_public_meta(data.get("meta", {})),
     }
 
 
@@ -145,7 +146,7 @@ def _internet_summary_attrs(data: dict[str, Any]) -> dict[str, Any]:
         "wan2_stability_score": stability_score(data, "WAN2", 30),
         "routing_mode": routing_mode(data),
         "decision_reason": decision_reason,
-        "meta": data.get("meta", {}),
+        "meta": safe_public_meta(data.get("meta", {})),
     }
 
 def vpn_status(data: dict[str, Any]) -> dict[str, Any]:
@@ -162,7 +163,7 @@ def vpn_status(data: dict[str, Any]) -> dict[str, Any]:
         "raw_teleport_candidates": [],
         "raw_teleport_candidates_integration": [],
         "raw_teleport_candidates_legacy": [],
-        "meta": data.get("meta", {}),
+        "meta": safe_public_meta(data.get("meta", {})),
     }
 
 
@@ -176,13 +177,13 @@ def _vpn_raw_attrs(data: dict[str, Any]) -> dict[str, Any]:
     status = vpn_status(data)
     return {
         "summary": status.get("summary", {}),
-        "data": status.get("data", []),
-        "raw": status.get("raw", []),
-        "raw_remote": status.get("raw_remote", []),
-        "raw_teleport_candidates": status.get("raw_teleport_candidates", []),
-        "raw_teleport_candidates_integration": status.get("raw_teleport_candidates_integration", []),
-        "raw_teleport_candidates_legacy": status.get("raw_teleport_candidates_legacy", []),
-        "meta": status.get("meta", {}),
+        "data": safe_vpn_rows(status.get("data", [])),
+        "raw": safe_vpn_rows(status.get("raw", [])),
+        "raw_remote": safe_vpn_rows(status.get("raw_remote", [])),
+        "raw_teleport_candidates": safe_vpn_rows(status.get("raw_teleport_candidates", [])),
+        "raw_teleport_candidates_integration": safe_vpn_rows(status.get("raw_teleport_candidates_integration", [])),
+        "raw_teleport_candidates_legacy": safe_vpn_rows(status.get("raw_teleport_candidates_legacy", [])),
+        "meta": safe_public_meta(status.get("meta", {})),
     }
 
 
@@ -201,9 +202,9 @@ def _vpn_connected_users_attrs(data: dict[str, Any]) -> dict[str, Any]:
     return {
         "full_text": summary.get("connected_users", ""),
         "users": [row.get("label") for row in rows if isinstance(row, dict) and row.get("label")],
-        "raw_data": rows,
-        "remote_users": remote_rows,
-        "teleport_users": teleport_rows,
+        "raw_data": safe_vpn_rows(rows),
+        "remote_users": safe_vpn_rows(remote_rows),
+        "teleport_users": safe_vpn_rows(teleport_rows),
     }
 
 
@@ -304,10 +305,10 @@ def wan_events(data: dict[str, Any]) -> dict[str, Any]:
 def _wan_events_attrs(data: dict[str, Any]) -> dict[str, Any]:
     value = wan_events(data)
     return {
-        "events": value.get("events", []),
-        "last_event": value.get("last_event", {}),
+        "events": safe_wan_events(value.get("events", [])),
+        "last_event": safe_wan_event(value.get("last_event", {})),
         "counters": value.get("counters", {}),
-        "webhook": value.get("webhook", {}),
+        "webhook": {"enabled": bool(value.get("webhook", {}).get("enabled")), "local_only": bool(value.get("webhook", {}).get("local_only"))},
         "meta": value.get("meta", {}),
     }
 
@@ -325,7 +326,7 @@ def _wan_last_event_attrs(data: dict[str, Any]) -> dict[str, Any]:
         "kind": event.get("kind", "none"),
         "severity": event.get("severity", "info"),
         "notify_text": event.get("notify_text", ""),
-        "raw": event,
+        "raw": safe_wan_event(event),
     }
 
 
@@ -336,10 +337,10 @@ def _webhook_attrs(data: dict[str, Any]) -> dict[str, Any]:
     webhook_id = str(info.get("webhook_id") or "")
     return {
         "enabled": bool(info.get("enabled")),
-        "webhook_id": webhook_id,
+        "webhook_id_configured": bool(webhook_id),
         "local_only": bool(info.get("local_only")),
-        "path": f"/api/webhook/{webhook_id}" if webhook_id else "",
-        "example_url": f"http://homeassistant.local:8123/api/webhook/{webhook_id}" if webhook_id else "",
+        "path": "",
+        "example_url": "",
     }
 
 
@@ -359,14 +360,14 @@ SENSORS: tuple[UniFiSensorDescription, ...] = (
         name="WAN Health Raw",
         icon="mdi:api",
         value_fn=lambda data: wan_health(data).get("status", "unknown"),
-        attrs_fn=lambda data: dict(wan_health(data)),
+        attrs_fn=lambda data: safe_wan_health(wan_health(data)),
     ),
     UniFiSensorDescription(
         key="wan_config_raw",
         name="WAN Config Raw",
         icon="mdi:api",
         value_fn=lambda data: f"{len(data.get('wan_config', []))} WANs",
-        attrs_fn=lambda data: {"data": data.get("wan_config", []), "meta": data.get("meta", {})},
+        attrs_fn=lambda data: {"data": safe_wan_config_rows(data.get("wan_config", [])), "meta": safe_public_meta(data.get("meta", {}))},
     ),
     UniFiSensorDescription(
         key="wan1_configuration",
