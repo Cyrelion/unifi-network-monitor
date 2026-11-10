@@ -5,6 +5,9 @@
 - Add Home Assistant reauthentication flow for expired or changed UniFi OS credentials.
 - Validate replacement credentials before updating and reloading the existing config entry.
 - Preserve site configuration, options and entities during reauthentication.
+- Harden Home Assistant entity attributes with strict allowlists for WAN configuration, health, VPN sessions, webhook events and diagnostic metadata.
+- Prevent unrestricted raw configuration and webhook identifiers from being exposed in entity attributes.
+- Add security regression tests covering sensitive data exposure and metadata filtering.
 
 ## 1.0.2
 
