@@ -11,6 +11,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DEFAULT_CACHE_MAX_AGE, DOMAIN
+from .security import safe_public_meta, safe_wan_stats
 from .coordinator import UniFiNetworkMonitorCoordinator
 from .entity import UniFiNetworkMonitorEntity, float_value, is_wan_online, wan_stats
 
@@ -40,7 +41,7 @@ def _wan_attrs(data: dict[str, Any], key: str) -> dict[str, Any]:
         "availability": float_value(stats.get("availability")),
         "latency_avg": float_value(stats.get("latency_average")),
         "uptime": stats.get("uptime", 0),
-        "raw": stats,
+        "raw": safe_wan_stats(stats),
     }
 
 
@@ -52,7 +53,7 @@ def _internet_online_attrs(data: dict[str, Any]) -> dict[str, Any]:
         "wan2_online": is_wan_online(data, "WAN2"),
         "wan1": _wan_attrs(data, "WAN"),
         "wan2": _wan_attrs(data, "WAN2"),
-        "meta": data.get("meta", {}),
+        "meta": safe_public_meta(data.get("meta", {})),
     }
 
 def vpn_status(data: dict[str, Any]) -> dict[str, Any]:
@@ -137,7 +138,7 @@ BINARY_SENSORS: tuple[UniFiBinarySensorDescription, ...] = (
         name="WAN API Fresh",
         device_class=BinarySensorDeviceClass.CONNECTIVITY,
         value_fn=_api_fresh,
-        attrs_fn=lambda data: {"meta": data.get("meta", {})},
+        attrs_fn=lambda data: {"meta": safe_public_meta(data.get("meta", {}))},
     ),
 
     UniFiBinarySensorDescription(

@@ -16,6 +16,7 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import UniFiAuthError, UniFiNetworkMonitorClient, UniFiRequestError
+from .security import safe_wan_event, safe_wan_events
 from .const import (
     CONF_EXPECTED_WAN_TOPOLOGY,
     DEFAULT_EXPECTED_WAN_TOPOLOGY,
@@ -156,7 +157,7 @@ class UniFiNetworkMonitorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             return
         events = stored.get("events")
         if isinstance(events, list):
-            self._wan_events = [row for row in events if isinstance(row, dict)][:DEFAULT_WEBHOOK_HISTORY_LIMIT]
+            self._wan_events = safe_wan_events(events)[:DEFAULT_WEBHOOK_HISTORY_LIMIT]
 
     def set_webhook_info(self, *, enabled: bool, webhook_id: str, local_only: bool) -> None:
         """Set runtime webhook information exposed via sensors."""
@@ -172,7 +173,7 @@ class UniFiNetworkMonitorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def async_add_wan_event(self, event: dict[str, Any]) -> None:
         """Add a WAN webhook event to local history and update entities."""
-        self._wan_events = [dict(event), *self._wan_events][:DEFAULT_WEBHOOK_HISTORY_LIMIT]
+        self._wan_events = [safe_wan_event(event), *self._wan_events][:DEFAULT_WEBHOOK_HISTORY_LIMIT]
         await self._store.async_save({"events": self._wan_events})
         if self.data:
             data = copy.deepcopy(self.data)

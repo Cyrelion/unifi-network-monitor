@@ -23,6 +23,7 @@ from .const import (
     DOMAIN,
 )
 from .coordinator import UniFiNetworkMonitorCoordinator
+from .security import safe_wan_event
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -105,7 +106,7 @@ async def async_handle_wan_webhook(
     """Handle an incoming UniFi Alarm Manager WAN webhook request."""
     payload = await _read_payload(request)
     query = {key: value for key, value in request.query.items()}
-    event = build_wan_event(payload, query, request.method)
+    event = safe_wan_event(build_wan_event(payload, query, request.method))
 
     await coordinator.async_add_wan_event(event)
 
@@ -238,8 +239,6 @@ def build_wan_event(payload: Mapping[str, Any], query: Mapping[str, Any], method
         "kind": kind,
         "severity": severity,
         "notify_text": notify_text,
-        "parameters": _safe_mapping(parameters),
-        "query": _safe_mapping(query),
     }
 
 def _first_value(*args: Any) -> str | None:
