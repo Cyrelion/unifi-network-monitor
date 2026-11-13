@@ -536,6 +536,41 @@ examples/dashboards/90_noc_unifi_network_monitor.yaml
 
 It expects the integration entities and the Utility Meter helper package.
 
+### Dashboard prerequisites
+
+The dashboard uses Home Assistant's built-in Sections view and cards, plus
+these custom Lovelace cards. Install them with HACS under **Frontend**:
+
+- **Mushroom** (status, entity and chip cards).
+- **ApexCharts Card** (traffic graphs).
+- **Modern Circular Gauge** (stability scores).
+
+The example does not require Jarvis-specific cards, Lumina Network Card, or
+custom `uix` styling.
+
+### Helper packages and optional entities
+
+The integration's optional Utility Meter helpers are in
+[`examples/packages/unifi_network_monitor_helpers.yaml`](examples/packages/unifi_network_monitor_helpers.yaml).
+Copy that file into `/config/packages/`, enable packages in
+`configuration.yaml`, and restart Home Assistant. See the
+[Utility Meter helper section](#traffic-totals-and-utility-meter-helper-package)
+for the complete setup.
+
+The separate [connectivity helper package](examples/packages/unifi_network_monitor_connectivity_helpers.yaml)
+adds independent DNS and HTTP checks, but is not required for this dashboard.
+
+The dashboard also references `sensor.speedtest_download`,
+`sensor.speedtest_upload` and `sensor.speedtest_ping` from the separate
+Speedtest integration. These are **optional** and are not provided by
+UniFi Network Monitor. If they are unavailable, remove the corresponding
+Mushroom chips/cards and both "Traffic & Latency Correlation" charts, or
+substitute the names of your own Speedtest sensors.
+
+To use the example, import its YAML as a view into a YAML-mode dashboard,
+or copy its sections into your own dashboard. Adjust any entity IDs that
+differ from your setup.
+
 ## Diagnostics
 
 Diagnostics redact credentials, API keys, webhook IDs and SNMP community strings.
