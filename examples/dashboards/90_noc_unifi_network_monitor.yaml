@@ -6,40 +6,6 @@ max_columns: 3
 subview: true
 sections:
   - type: grid
-    cards:
-      - title: Network Operations Center
-        icon: mdi:network-outline
-        tap_action:
-          action: navigate
-          navigation_path: /jarvis-home
-        right_items:
-          - type: state
-            entity: sensor.server_rack_temperature
-            icon: mdi:thermometer
-            decimals: 1
-            tap_action:
-              action: more-info
-          - type: state
-            entity: binary_sensor.unifi_network_monitor_internet_online
-            icon: mdi:web
-            decimals: 1
-            tap_action:
-              action: more-info
-          - type: state
-            entity: sensor.unifi_network_monitor_internet_routing_mode
-            tap_action:
-              action: more-info
-          - type: action
-            icon: mdi:close
-            tap_action:
-              action: navigate
-              navigation_path: /jarvis-home
-        type: custom:jarvis-room-header-card
-        grid_options:
-          columns: full
-    column_span: 3
-
-  - type: grid
     column_span: 3
     cards:
       - type: markdown
@@ -51,13 +17,6 @@ sections:
           Current Status: **{{ states('sensor.unifi_network_monitor_internet_health_state') }}** • Routing: **{{ states('sensor.unifi_network_monitor_internet_routing_mode') }}** • Uptime: **{{ states('sensor.unifi_network_monitor_internet_uptime_today_percent') }}%**
         grid_options:
           columns: full
-        uix:
-          style: |
-            ha-card {
-              background: linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(76, 175, 80, 0.1) 100%);
-              border-left: 4px solid var(--primary-color);
-            }
-
   - type: grid
     column_span: 3
     cards:
@@ -335,13 +294,6 @@ sections:
           Teleport: **{{ states('sensor.unifi_network_monitor_vpn_teleport_count') }}**
         grid_options:
           columns: full
-        uix:
-          style: |
-            ha-card {
-              background: linear-gradient(135deg, rgba(40,140,165,0.10) 0%, rgba(99,202,214,0.08) 100%);
-              border-left: 4px solid var(--primary-color);
-            }
-
       - type: horizontal-stack
         cards:
           - type: custom:mushroom-template-card
@@ -512,38 +464,6 @@ sections:
   - type: grid
     column_span: 3
     cards:
-      - type: custom:lumina-network-card
-        background_url: /local/community/lumina-network-card/lumina-network-card.jpg
-        font_size: 30px
-        line_width: 5
-        pos_starlink_outer: 225,355
-        pos_starlink_inner: 400,430
-        text_starlink_x: 70
-        text_starlink_y: 310
-        pos_fiber_outer: 750,350
-        pos_fiber_inner: 595,430
-        text_fiber_x: 920
-        text_fiber_y: 310
-        pos_house_outer: 500,290
-        pos_house_inner: 500,370
-        text_total_x: 560
-        text_total_y: 310
-        starlink_rx: sensor.unifi_network_monitor_wan2_rx_rate
-        starlink_tx: sensor.unifi_network_monitor_wan2_tx_rate
-        starlink_max_rx: 250
-        starlink_max_tx: 25
-        fiber_rx: sensor.unifi_network_monitor_wan1_rx_rate
-        fiber_tx: sensor.unifi_network_monitor_wan1_tx_rate
-        fiber_max_rx: 80
-        fiber_max_tx: 25
-        info_sensor: sensor.unifi_network_monitor_internet_routing_mode
-        info_text_x: 500
-        info_text_y: 500
-        info_font_size: 24px
-        grid_options:
-          columns: 24
-          rows: auto
-
       - type: markdown
         content: >-
           ## 🔀 Routing Decision Matrix
@@ -558,9 +478,9 @@ sections:
 
           {% set wan2_online = is_state('binary_sensor.unifi_network_monitor_wan2_online', 'on') %}
 
-          {% set wan1_name = state_attr('sensor.unifi_network_monitor_wan1_configuration', 'name') | default('Telekom DSL') %}
+          {% set wan1_name = state_attr('sensor.unifi_network_monitor_wan1_configuration', 'name') | default('WAN1', true) %}
 
-          {% set wan2_name = state_attr('sensor.unifi_network_monitor_wan2_configuration', 'name') | default('Starlink') %}
+          {% set wan2_name = state_attr('sensor.unifi_network_monitor_wan2_configuration', 'name') | default('WAN2', true) %}
 
           {% set wan1_prio = state_attr('sensor.unifi_network_monitor_wan1_configuration', 'failover_priority') | int(99) %}
 
@@ -689,23 +609,6 @@ sections:
         grid_options:
           columns: 24
           rows: auto
-        uix:
-          style: |
-            ha-card {
-              background: var(--card-background-color);
-              border-left: 4px solid 
-                {% if states('sensor.unifi_network_monitor_internet_routing_mode') == 'WAN2' %}
-                  var(--green-color)
-                {% elif states('sensor.unifi_network_monitor_internet_routing_mode') == 'BALANCED' %}
-                  var(--green-color)
-                {% elif states('sensor.unifi_network_monitor_internet_routing_mode') == 'WAN1' %}
-                  var(--yellow-color)
-                {% elif states('sensor.unifi_network_monitor_internet_routing_mode') == 'OFFLINE' %}
-                  var(--red-color)
-                {% else %}
-                  var(--amber-color)
-                {% endif %};
-            }
   - type: grid
     column_span: 3
     cards:
@@ -1024,7 +927,7 @@ sections:
           - entity: binary_sensor.unifi_network_monitor_wan1_online
             name: WAN1 (Fiber)
           - entity: binary_sensor.unifi_network_monitor_wan2_online
-            name: WAN2 (Starlink)
+            name: WAN2
         grid_options:
           columns: full
       - type: custom:mushroom-chips-card
@@ -1036,17 +939,6 @@ sections:
             tap_action:
               action: more-info
               entity: sensor.unifi_network_monitor_wan_total_outages_today
-            uix:
-              style: |
-                ha-card {
-                  {% if states('sensor.unifi_network_monitor_wan_total_outages_today') | int(0) > 0 %}
-                    animation: blink 2s ease-in-out infinite;
-                  {% endif %}
-                }
-                @keyframes blink {
-                  0%, 100% { opacity: 1; }
-                  50% { opacity: 0.3; }
-                }
         alignment: center
         grid_options:
           columns: full
@@ -1290,16 +1182,3 @@ sections:
         tap_action:
           action: navigate
           navigation_path: /config/logs
-      - type: button
-        name: Reset Counters
-        icon: mdi:restore
-        tap_action:
-          action: call-service
-          service: counter.reset
-          target:
-            entity_id:
-              - sensor.unifi_network_monitor_wan_total_outages_today
-              - sensor.unifi_network_monitor_wan1_outages_today
-              - sensor.unifi_network_monitor_wan2_outages_today
-        confirmation:
-          text: Reset all daily counters?
