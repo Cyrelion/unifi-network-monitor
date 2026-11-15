@@ -31,6 +31,7 @@ https://github.com/Cyrelion/unifi-network-monitor
 custom_components/unifi_network_monitor/
 examples/packages/unifi_network_monitor_helpers.yaml
 examples/packages/unifi_network_monitor_connectivity_helpers.yaml
+examples/dashboards/10_unifi_network_monitor_starter.yaml
 examples/dashboards/90_noc_unifi_network_monitor.yaml
 brands/unifi_network_monitor/icon.png
 brands/unifi_network_monitor/logo.png
