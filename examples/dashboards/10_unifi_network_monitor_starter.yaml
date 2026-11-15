@@ -1,6 +1,7 @@
 # UniFi Network Monitor: Starter Dashboard
 # A Home Assistant Sections view using built-in cards only.
 # No HACS frontend cards, Speedtest integration or helper packages are required.
+# Works with one WAN connection. WAN2 additions are optional (see below).
 # SNMP traffic sensors require SNMP to be enabled in the integration options.
 type: sections
 path: unifi-network
@@ -36,28 +37,15 @@ sections:
   - type: grid
     cards:
       - type: heading
-        heading: WAN connections
+        heading: WAN connection
         icon: mdi:wan
       - type: tile
         entity: binary_sensor.unifi_network_monitor_wan1_online
         name: WAN1 status
         color: green
-      - type: tile
-        entity: binary_sensor.unifi_network_monitor_wan2_online
-        name: WAN2 status
-        color: green
       - type: gauge
         entity: sensor.unifi_network_monitor_wan1_stability_score
         name: WAN1 stability
-        min: 0
-        max: 100
-        severity:
-          red: 0
-          yellow: 50
-          green: 90
-      - type: gauge
-        entity: sensor.unifi_network_monitor_wan2_stability_score
-        name: WAN2 stability
         min: 0
         max: 100
         severity:
@@ -75,8 +63,6 @@ sections:
         entities:
           - entity: sensor.unifi_network_monitor_wan1_total_mbps
             name: WAN1 traffic
-          - entity: sensor.unifi_network_monitor_wan2_total_mbps
-            name: WAN2 traffic
           - entity: sensor.unifi_network_monitor_internet_total_mbps
             name: Total traffic
       - type: entities
@@ -102,7 +88,32 @@ sections:
             name: Outages today
           - entity: sensor.unifi_network_monitor_wan1_outages_today
             name: WAN1 outages today
-          - entity: sensor.unifi_network_monitor_wan2_outages_today
-            name: WAN2 outages today
           - entity: sensor.unifi_network_monitor_wan_last_event
             name: Last WAN event
+
+# OPTIONAL WAN2 ADD-ON
+# If your gateway has a second WAN connection, add these cards/rows in the
+# corresponding sections above. Remove the leading '# ' from the desired lines.
+#
+# Under "WAN connection" > cards:
+#      - type: tile
+#        entity: binary_sensor.unifi_network_monitor_wan2_online
+#        name: WAN2 status
+#        color: green
+#      - type: gauge
+#        entity: sensor.unifi_network_monitor_wan2_stability_score
+#        name: WAN2 stability
+#        min: 0
+#        max: 100
+#        severity:
+#          red: 0
+#          yellow: 50
+#          green: 90
+#
+# Under "Live traffic (optional SNMP)" > entities:
+#          - entity: sensor.unifi_network_monitor_wan2_total_mbps
+#            name: WAN2 traffic
+#
+# Under "WAN events" > entities:
+#          - entity: sensor.unifi_network_monitor_wan2_outages_today
+#            name: WAN2 outages today
