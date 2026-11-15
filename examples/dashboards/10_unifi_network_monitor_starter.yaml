@@ -1,0 +1,108 @@
+# UniFi Network Monitor: Starter Dashboard
+# A Home Assistant Sections view using built-in cards only.
+# No HACS frontend cards, Speedtest integration or helper packages are required.
+# SNMP traffic sensors require SNMP to be enabled in the integration options.
+type: sections
+path: unifi-network
+title: UniFi Network
+icon: mdi:network
+max_columns: 3
+sections:
+  - type: grid
+    cards:
+      - type: heading
+        heading: Internet overview
+        icon: mdi:web
+      - type: tile
+        entity: binary_sensor.unifi_network_monitor_internet_online
+        name: Internet connection
+        color: green
+      - type: tile
+        entity: sensor.unifi_network_monitor_internet_health_state
+        name: Connection health
+      - type: tile
+        entity: sensor.unifi_network_monitor_internet_routing_mode
+        name: Routing mode
+      - type: gauge
+        entity: sensor.unifi_network_monitor_internet_stability_score
+        name: Internet stability
+        min: 0
+        max: 100
+        severity:
+          red: 0
+          yellow: 50
+          green: 90
+
+  - type: grid
+    cards:
+      - type: heading
+        heading: WAN connections
+        icon: mdi:wan
+      - type: tile
+        entity: binary_sensor.unifi_network_monitor_wan1_online
+        name: WAN1 status
+        color: green
+      - type: tile
+        entity: binary_sensor.unifi_network_monitor_wan2_online
+        name: WAN2 status
+        color: green
+      - type: gauge
+        entity: sensor.unifi_network_monitor_wan1_stability_score
+        name: WAN1 stability
+        min: 0
+        max: 100
+        severity:
+          red: 0
+          yellow: 50
+          green: 90
+      - type: gauge
+        entity: sensor.unifi_network_monitor_wan2_stability_score
+        name: WAN2 stability
+        min: 0
+        max: 100
+        severity:
+          red: 0
+          yellow: 50
+          green: 90
+
+  - type: grid
+    cards:
+      - type: heading
+        heading: Traffic and remote access
+        icon: mdi:chart-line
+      - type: entities
+        title: Live traffic (optional SNMP)
+        entities:
+          - entity: sensor.unifi_network_monitor_wan1_total_mbps
+            name: WAN1 traffic
+          - entity: sensor.unifi_network_monitor_wan2_total_mbps
+            name: WAN2 traffic
+          - entity: sensor.unifi_network_monitor_internet_total_mbps
+            name: Total traffic
+      - type: entities
+        title: VPN and remote access
+        entities:
+          - entity: binary_sensor.unifi_network_monitor_vpn_active
+            name: VPN active
+          - entity: sensor.unifi_network_monitor_vpn_active_count
+            name: Active sessions
+          - entity: sensor.unifi_network_monitor_vpn_teleport_count
+            name: Teleport sessions
+
+  - type: grid
+    column_span: 3
+    cards:
+      - type: heading
+        heading: Network events
+        icon: mdi:alert-circle-outline
+      - type: entities
+        title: WAN events
+        entities:
+          - entity: sensor.unifi_network_monitor_wan_total_outages_today
+            name: Outages today
+          - entity: sensor.unifi_network_monitor_wan1_outages_today
+            name: WAN1 outages today
+          - entity: sensor.unifi_network_monitor_wan2_outages_today
+            name: WAN2 outages today
+          - entity: sensor.unifi_network_monitor_wan_last_event
+            name: Last WAN event
