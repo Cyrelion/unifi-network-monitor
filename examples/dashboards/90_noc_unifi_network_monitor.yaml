@@ -1,3 +1,6 @@
+# Advanced NOC view: optional example for dual-WAN gateway configurations.
+# For single-WAN systems, use the Starter view or remove WAN2-specific cards,
+# charts, and template references before importing this view.
 type: sections
 path: noc
 title: Network Operations Center
