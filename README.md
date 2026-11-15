@@ -59,21 +59,30 @@ The icon is custom made for this integration and intentionally avoids using offi
 4. Optional UniFi Network Integration API key for richer Teleport detection
 5. Optional SNMP v2c enabled on the UniFi gateway for traffic counters
 
-## Installation with HACS custom repository
+## Installation
 
-Add this repository as a custom integration repository in HACS:
+### HACS (recommended)
 
-```text
-https://github.com/Cyrelion/unifi-network-monitor
-```
+Click the button to open **UniFi Network Monitor** directly in HACS (or the
+Home Assistant Marketplace on newer Home Assistant versions):
 
-Then install **UniFi Network Monitor**, restart Home Assistant, and add the integration from:
+[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Cyrelion&repository=unifi-network-monitor&category=integration)
 
-```text
-Settings > Devices & services > Add integration > UniFi Network Monitor
-```
+Select **Download**, restart Home Assistant, and add the integration under
+**Settings > Devices & services > Add integration > UniFi Network Monitor**.
 
-## Manual installation
+### Add as a custom HACS repository
+
+Until UniFi Network Monitor appears in the default HACS catalog, you can also
+add it manually:
+
+1. Open **HACS > three-dot menu > Custom repositories**.
+2. Add `https://github.com/Cyrelion/unifi-network-monitor` as category **Integration**.
+3. Find **UniFi Network Monitor** in HACS and select **Download**.
+4. Restart Home Assistant and add the integration under
+   **Settings > Devices & services > Add integration**.
+
+### Manual installation
 
 Copy this directory:
 
