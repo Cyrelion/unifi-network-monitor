@@ -547,7 +547,10 @@ you want.
 
 - Uses **only built-in Home Assistant cards** (Sections, Tile, Entities, Gauge and Heading).
 - **No additional HACS frontend cards or helper packages** are required.
-- Shows internet and WAN status, routing, stability, VPN sessions and WAN events.
+- Works with **one WAN connection by default** and shows internet/WAN status,
+  routing, stability, VPN sessions and WAN events.
+- For **dual-WAN gateways**, uncomment the optional WAN2 tile, gauge and entity
+  rows shown at the bottom of the starter YAML.
 - Traffic rate entities are included but need optional SNMP traffic polling in the
   integration settings; remove that card if you do not use SNMP.
 
@@ -555,8 +558,10 @@ you want.
 
 [`examples/dashboards/90_noc_unifi_network_monitor.yaml`](examples/dashboards/90_noc_unifi_network_monitor.yaml)
 
-Includes detailed dual-WAN metrics, routing analysis, traffic graphs, outage
-statistics and VPN information. Install the following additional Lovelace
+This is an **optional dual-WAN-focused** NOC example. It includes detailed
+WAN1/WAN2 metrics, routing analysis, traffic graphs, outage statistics and
+VPN information. For a single-WAN setup, start with the Starter dashboard;
+this advanced view needs adaptation to remove WAN2-specific cards and charts. Install the following additional Lovelace
 cards through HACS under **Frontend**:
 
 - **Mushroom** for status, entity and chip cards.
