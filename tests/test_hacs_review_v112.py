@@ -122,6 +122,23 @@ class TestLoginErrorClassification(unittest.TestCase):
         with self.assertRaises(UniFiRequestError):
             asyncio.run(self.login(client))
 
+    def test_forced_relogin_rejects_invalid_credentials(self):
+        client = FakeClient(401)
+        client._authenticated_until = time.time() + 3600
+        with self.assertRaises(UniFiAuthError):
+            asyncio.run(self.login(client, force=True))
+        self.assertEqual(client.cookies_cleared, 1)
+
+    def test_network_failure_is_a_request_error(self):
+        class OfflineSession:
+            def post(self, *args, **kwargs):
+                raise ClientError("gateway unreachable")
+
+        client = FakeClient()
+        client.session = OfflineSession()
+        with self.assertRaises(UniFiRequestError):
+            asyncio.run(self.login(client))
+
     def test_login_uses_valid_session_and_refreshes_expired_one(self):
         client = FakeClient(200)
         client._authenticated_until = time.time() + 60
