@@ -38,7 +38,7 @@ from .const import (
     DOMAIN,
 )
 from .coordinator import UniFiNetworkMonitorCoordinator
-from .webhook import async_register_webhook, async_unregister_webhook
+from .webhook import async_register_webhook
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.BUTTON]
 
@@ -87,9 +87,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     coordinator = UniFiNetworkMonitorCoordinator(hass, entry, api)
     await coordinator.async_load_local_state()
 
+    # A failed initial refresh must not leave a webhook registered for retries.
+    await coordinator.async_config_entry_first_refresh()
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
     await async_register_webhook(hass, entry, coordinator)
-    await coordinator.async_config_entry_first_refresh()
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
@@ -99,6 +100,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
-        await async_unregister_webhook(hass, entry)
-        hass.data[DOMAIN].pop(entry.entry_id)
+        # Home Assistant calls callbacks registered by entry.async_on_unload().
+        hass.data[DOMAIN].pop(entry.entry_id, None)
     return unload_ok
