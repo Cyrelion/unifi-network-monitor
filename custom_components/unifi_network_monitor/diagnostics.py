@@ -9,7 +9,12 @@ from homeassistant.helpers.diagnostics import async_redact_data
 
 from .const import DOMAIN
 
-TO_REDACT = {"password", "api_key", "username", "webhook_id", "snmp_community"}
+TO_REDACT = {
+    "password", "api_key", "username", "webhook_id", "snmp_community",
+    "user", "name", "display_name", "label", "connected_users",
+    # VPN rows may also identify household members through hostnames or MACs.
+    "hostname", "mac",
+}
 
 
 async def async_get_config_entry_diagnostics(
