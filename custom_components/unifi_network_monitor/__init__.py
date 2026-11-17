@@ -90,6 +90,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # A failed initial refresh must not leave a webhook registered for retries.
     await coordinator.async_config_entry_first_refresh()
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
+    # Also remove the coordinator if a later platform setup fails.
+    entry.async_on_unload(lambda: hass.data.get(DOMAIN, {}).pop(entry.entry_id, None))
     await async_register_webhook(hass, entry, coordinator)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -99,7 +101,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    if unload_ok:
-        # Home Assistant calls callbacks registered by entry.async_on_unload().
-        hass.data[DOMAIN].pop(entry.entry_id, None)
+    # Home Assistant runs the registered unload callbacks when unloading
+    # succeeds, including webhook and coordinator cleanup.
     return unload_ok
