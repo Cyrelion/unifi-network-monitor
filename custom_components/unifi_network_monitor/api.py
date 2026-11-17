@@ -143,7 +143,7 @@ class UniFiNetworkMonitorClient:
 
         async with self._login_lock:
             now = time.time()
-            if not force and self._authenticated_until > 0:
+            if not force and self._authenticated_until > now:
                 return
 
             if self._login_backoff_until > now:
