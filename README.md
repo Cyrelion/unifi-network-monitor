@@ -509,11 +509,20 @@ The full helper package is included in the repository, but is intentionally not 
 
 The integration exposes a Home Assistant webhook for UniFi Alarm Manager WAN events.
 
-Check the webhook URL in the attributes of:
+Find the webhook ID under **Settings > Devices & services > UniFi Network Monitor > Configure**,
+in the **Webhook ID** field. The receiver URL for your Home Assistant instance is:
 
 ```text
-sensor.unifi_network_monitor_wan_webhook_status
+https://YOUR_HOME_ASSISTANT_HOST/api/webhook/YOUR_WEBHOOK_ID
 ```
+
+Replace `YOUR_HOME_ASSISTANT_HOST` with the address reachable by your UniFi gateway
+and `YOUR_WEBHOOK_ID` with the configured ID. Make sure the UniFi Alarm
+Manager can reach that address (including your Home Assistant port, if any).
+The webhook ID is generated during a successful setup if none is configured.
+
+For security, `sensor.unifi_network_monitor_wan_webhook_status` reports
+whether the webhook is enabled but **does not expose the ID or URL**.
 
 Webhook related entities:
 
@@ -601,7 +610,9 @@ entity IDs for your installation.
 
 ## Diagnostics
 
-Diagnostics redact credentials, API keys, webhook IDs and SNMP community strings.
+Diagnostics redact credentials, API keys, webhook IDs, SNMP community strings,
+and VPN user identities. Usernames remain available to local VPN entities and
+dashboards, but are redacted from downloaded diagnostics.
 
 ## License
 

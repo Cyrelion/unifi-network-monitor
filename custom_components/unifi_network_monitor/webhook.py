@@ -88,8 +88,11 @@ async def async_register_webhook(
             local_only=local_only,
         )
 
+    # Ensure registration is also undone on failed setup/reload, not only
+    # when async_unload_entry is reached after successful setup.
+    entry.async_on_unload(lambda: webhook.async_unregister(hass, webhook_id))
     coordinator.set_webhook_info(enabled=True, webhook_id=webhook_id, local_only=local_only)
-    _LOGGER.debug("Registered UniFi Network Monitor webhook %s", webhook_id)
+    _LOGGER.debug("Registered UniFi Network Monitor WAN webhook")
 
 
 async def async_unregister_webhook(hass: HomeAssistant, entry: ConfigEntry) -> None:

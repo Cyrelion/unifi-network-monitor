@@ -138,17 +138,17 @@ class UniFiNetworkMonitorClient:
         cycle. The old Bash package had the same idea via LOGIN_BACKOFF_SECONDS.
         """
         now = time.time()
-        if not force and self._authenticated_until > 0:
+        if not force and self._authenticated_until > now:
             return
 
         async with self._login_lock:
             now = time.time()
-            if not force and self._authenticated_until > 0:
+            if not force and self._authenticated_until > now:
                 return
 
             if self._login_backoff_until > now:
                 remaining = int(self._login_backoff_until - now)
-                raise UniFiAuthError(
+                raise UniFiRequestError(
                     f"login_backoff_active; retrying login in about {remaining}s"
                 )
 
@@ -176,20 +176,18 @@ class UniFiNetworkMonitorClient:
                             return
                         if response.status == 429:
                             self._login_backoff_until = time.time() + 15 * 60
-                            raise UniFiAuthError(
-                                f"UniFi OS rate limited the login request: {text[:300]}"
-                            )
+                            raise UniFiRequestError("UniFi OS rate limited login requests (HTTP 429)")
                         if response.status == 403 and attempt == 0:
                             self._clear_cookies()
                             await asyncio.sleep(0)
                             continue
                         break
 
-                raise UniFiAuthError(
-                    f"Login failed with HTTP {last_status}: {last_text[:300]}"
-                )
+                if last_status in (401, 403):
+                    raise UniFiAuthError(f"UniFi OS rejected credentials (HTTP {last_status})")
+                raise UniFiRequestError(f"UniFi OS login unavailable (HTTP {last_status})")
             except (ClientError, TimeoutError, asyncio.TimeoutError) as err:
-                raise UniFiAuthError(f"Login request failed: {err}") from err
+                raise UniFiRequestError(f"Login request failed: {err}") from err
 
     async def async_get_json(
         self,

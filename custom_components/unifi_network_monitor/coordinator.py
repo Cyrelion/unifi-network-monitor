@@ -81,13 +81,9 @@ class UniFiNetworkMonitorCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 self._merge_local_state(data)
             return data
         except UniFiAuthError as err:
-            if self.data:
-                _LOGGER.warning(
-                    "UniFi Network Monitor auth/update failed, keeping last known data: %s",
-                    err,
-                )
-                return await self._stale_data("auth_error", err)
-            raise ConfigEntryAuthFailed(str(err)) from err
+            # Only confirmed credential rejection is UniFiAuthError. Reauth
+            # must start even when previous coordinator data exists.
+            raise ConfigEntryAuthFailed("UniFi OS rejected the configured credentials") from err
         except UniFiRequestError as err:
             if self.data:
                 _LOGGER.warning(

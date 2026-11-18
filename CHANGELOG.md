@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.2 (Unreleased)
+
+- Fix webhook lifecycle handling on initial setup failures and reauthentication reloads.
+- Trigger reauthentication on confirmed credential rejection, while preserving
+  stale data and login backoff for transient network and rate-limit errors.
+- Stop logging secret webhook identifiers.
+- Redact VPN user identities in diagnostics without changing entity attributes.
+- Correct webhook setup instructions to use the integration options.
+
 ## 1.1.1
 
 - Add Home Assistant reauthentication flow for expired or changed UniFi OS credentials.
