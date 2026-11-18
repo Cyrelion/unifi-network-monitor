@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.2 (Unreleased)
+## 1.1.2
 
 - Fix webhook lifecycle handling on initial setup failures and reauthentication reloads.
 - Trigger reauthentication on confirmed credential rejection, while preserving
